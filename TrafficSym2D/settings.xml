@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TrafficSym2D>
+  <routeConfigs>
+    <config id="0" timeBetweenCarsMs="9000" comment="rightIn+upEnd">
+      <start x1="1017" y1="91" x2="1017" y2="106" direction="180"/>
+      <end  x1="637" y1="6" x2="622" y2="6"/>
+      <wall  x1="1017" y1="116" x2="897" y2="116"/>
+	  <wall  x1="897" y1="116" x2="842" y2="96"/>
+	  <wall  x1="622" y1="196" x2="607" y2="151"/>
+	  <wall  x1="617" y1="411" x2="647" y2="341"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="1" timeBetweenCarsMs="6000" comment="rightIn+leftEnd">
+      <start x1="1020" y1="94" x2="1020" y2="100" direction="180"/>
+      <start x1="1020" y1="120" x2="1020" y2="126" direction="180"/>
+      <end  x1="2" y1="546" x2="1" y2="495"/>
+	  <wall  x1="932" y1="81" x2="842" y2="96"/>
+	  <wall  x1="667" y1="116" x2="612" y2="131"/>
+	  <wall  x1="677" y1="166" x2="632" y2="206"/>
+	  <wall  x1="558" y1="241" x2="512" y2="276"/>
+	  <wall  x1="387" y1="291" x2="362" y2="301"/>
+	  <wall  x1="332" y1="322" x2="242" y2="356"/>
+	  <wall  x1="432" y1="331" x2="302" y2="401"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="2" timeBetweenCarsMs="7000" comment="rightIn+downEnd">
+      <start x1="1020" y1="120" x2="1020" y2="126" direction="180"/>
+      <end  x1="439" y1="766" x2="490" y2="765"/>
+	  <wall  x1="932" y1="81" x2="842" y2="96"/>
+	  <wall  x1="667" y1="116" x2="612" y2="131"/>
+	  <wall  x1="677" y1="166" x2="632" y2="206"/>
+	  <wall  x1="558" y1="241" x2="512" y2="276"/>
+	  <wall  x1="507" y1="216" x2="457" y2="271"/>
+	  <wall  x1="457" y1="271" x2="397" y2="316"/>
+	  <wall  x1="397" y1="316" x2="312" y2="391"/>
+	  <wall  x1="432" y1="331" x2="382" y2="376"/>
+	  <wall  x1="407" y1="526" x2="422" y2="561"/>
+	  <wall  x1="347" y1="546" x2="347" y2="581"/>
+	  <wall  x1="387" y1="651" x2="397" y2="706"/>
+	  <wall  x1="457" y1="662" x2="483" y2="691"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="3" timeBetweenCarsMs="11000" comment="rightIn+rightEnd">
+      <start x1="1020" y1="120" x2="1020" y2="126" direction="180"/>
+      <end x1="1022" y1="144" x2="1022" y2="166"/>
+      <wall  x1="932" y1="81" x2="842" y2="96"/>
+	  <wall  x1="667" y1="116" x2="612" y2="131"/>
+	  <wall  x1="677" y1="166" x2="632" y2="206"/>
+	  <wall  x1="558" y1="241" x2="512" y2="276"/>
+	  <wall  x1="507" y1="216" x2="457" y2="271"/>
+	  <wall  x1="457" y1="271" x2="397" y2="316"/>
+	  <wall  x1="397" y1="316" x2="382" y2="376"/>
+	  <wall  x1="427" y1="521" x2="437" y2="551"/>
+	  <wall  x1="632" y1="491" x2="677" y2="441"/>
+	  <wall  x1="682" y1="456" x2="727" y2="391"/>
+	  <wall  x1="617" y1="411" x2="707" y2="301"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="4" timeBetweenCarsMs="8000" comment="downIn+rightEnd">
+      <start  x1="749" y1="765" x2="753" y2="765" direction="265"/>
+      <end  x1="1021" y1="165" x2="1020" y2="142"/>
+	  <wall  x1="717" y1="761" x2="707" y2="431"/>
+	  <wall  x1="707" y1="431" x2="697" y2="331"/>
+	  <wall  x1="617" y1="411" x2="707" y2="301"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="5" timeBetweenCarsMs="6000" comment="downIn+upEnd">
+      <start  x1="704" y1="765" x2="706" y2="765" direction="265"/>
+      <start  x1="727" y1="765" x2="729" y2="765" direction="265"/>
+      <start  x1="749" y1="765" x2="753" y2="765" direction="265"/>
+      <end  x1="641" y1="1" x2="569" y2="1"/>
+	  <wall  x1="622" y1="196" x2="607" y2="151"/>
+	  <wall  x1="617" y1="411" x2="647" y2="341"/>
+	  <wall  x1="667" y1="476" x2="642" y2="382"/>
+	  <wall  x1="732" y1="376" x2="712" y2="301"/>
+	  <wall  x1="687" y1="156" x2="677" y2="121"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>	  
+    </config>
+    <config id="6" timeBetweenCarsMs="8000" comment="downIn+leftEnd">
+      <start  x1="658" y1="762" x2="662" y2="762" direction="265"/>
+      <start  x1="680" y1="762" x2="683" y2="762" direction="265"/>
+      <end  x1="1" y1="546" x2="1" y2="496"/>
+	  <wall  x1="672" y1="476" x2="647" y2="342"/>
+	  <wall  x1="627" y1="486" x2="617" y2="426"/>
+	  <wall  x1="557" y1="236" x2="512" y2="221"/>
+	  <wall  x1="431" y1="331" x2="302" y2="401"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>	  
+	  <wall  x1="387" y1="291" x2="362" y2="301"/>
+	  <wall  x1="332" y1="322" x2="242" y2="356"/>
+    </config>
+    <config id="7" timeBetweenCarsMs="10000" comment="downIn+downEnd">
+      <start x1="645" y1="765" x2="639" y2="765" direction="265"/>
+      <end x1="489" y1="766" x2="439" y2="766"/>
+	  <wall  x1="662" y1="761" x2="637" y2="656"/>	  
+	  <wall  x1="427" y1="346" x2="382" y2="376"/>
+	  <wall  x1="407" y1="526" x2="427" y2="561"/>
+    </config>
+    <config id="8" timeBetweenCarsMs="8000" comment="leftIn+downEnd">
+      <start  x1="1" y1="703" x2="1" y2="706" direction="0"/>
+      <start  x1="1" y1="735" x2="1" y2="742" direction="0"/>
+      <end  x1="440" y1="764" x2="485" y2="762"/>
+	  <wall  x1="7" y1="681" x2="107" y2="671"/>
+	  <wall  x1="427" y1="346" x2="382" y2="376"/>
+	  <wall  x1="407" y1="526" x2="427" y2="561"/>
+	  <wall  x1="662" y1="761" x2="637" y2="656"/>	  
+    </config>
+    <config id="9" timeBetweenCarsMs="7000" comment="leftIn+rightEnd">
+      <start  x1="1" y1="650" x2="1" y2="655" direction="0"/>
+      <start  x1="1" y1="675" x2="1" y2="683" direction="0"/>
+      <end  x1="1022" y1="166" x2="1022" y2="140"/>
+	  <wall  x1="7" y1="701" x2="107" y2="671"/>
+	  <wall  x1="367" y1="596" x2="417" y2="571"/>
+	  <wall  x1="347" y1="541" x2="397" y2="526"/>
+	  <wall  x1="432" y1="516" x2="522" y2="481"/>
+	  <wall  x1="632" y1="491" x2="677" y2="441"/>
+	  <wall  x1="682" y1="456" x2="727" y2="391"/>
+	  <wall  x1="617" y1="411" x2="707" y2="301"/>
+	  <wall  x1="662" y1="761" x2="637" y2="656"/>	  
+    </config>
+    <config id="10" timeBetweenCarsMs="9000" comment="leftIn+upEnd">
+      <start  x1="1" y1="650" x2="1" y2="655" direction="0"/>
+      <start  x1="1" y1="675" x2="1" y2="683" direction="0"/>
+      <end  x1="568" y1="0" x2="641" y2="0"/>
+	  <wall  x1="7" y1="701" x2="107" y2="671"/>
+	  <wall  x1="367" y1="596" x2="417" y2="571"/>
+	  <wall  x1="347" y1="541" x2="397" y2="526"/>
+	  <wall  x1="432" y1="516" x2="522" y2="481"/>
+	  <wall  x1="617" y1="411" x2="647" y2="341"/>
+	  <wall  x1="631" y1="491" x2="697" y2="401"/>
+	  <wall  x1="702" y1="416" x2="712" y2="301"/>
+	  <wall  x1="617" y1="196" x2="607" y2="151"/>
+	  <wall  x1="662" y1="761" x2="637" y2="656"/>	  
+	  <wall  x1="687" y1="156" x2="672" y2="121"/>
+	  <wall  x1="657" y1="61" x2="652" y2="26"/>
+    </config>
+    <config id="11" timeBetweenCarsMs="11000" comment="leftIn+leftEnd">
+      <start  x1="1" y1="650" x2="1" y2="655" direction="0"/>
+      <end  x1="1" y1="545" x2="1" y2="495"/>
+	  <wall  x1="7" y1="701" x2="107" y2="671"/>
+	  <wall  x1="367" y1="596" x2="417" y2="571"/>
+	  <wall  x1="347" y1="541" x2="397" y2="526"/>
+	  <wall  x1="432" y1="516" x2="522" y2="481"/>
+	  <wall  x1="577" y1="511" x2="637" y2="447"/>
+	  <wall  x1="637" y1="447" x2="647" y2="341"/>
+	  <wall  x1="557" y1="241" x2="507" y2="226"/>
+	  <wall  x1="387" y1="291" x2="362" y2="301"/>
+	  <wall  x1="332" y1="322" x2="242" y2="356"/>
+	  <wall  x1="432" y1="331" x2="302" y2="401"/>
+	  <wall  x1="662" y1="761" x2="637" y2="656"/>	 
+    </config>
+    <config id="12" timeBetweenCarsMs="9000" comment="upIn+leftEnd">
+      <start x1="144" y1="2" x2="147" y2="2" direction="75"/>
+      <end  x1="1" y1="495" x2="1" y2="543"/>
+	  <wall  x1="162" y1="6" x2="282" y2="336"/>
+	  <wall  x1="432" y1="331" x2="302" y2="401"/>
+    </config>
+    <config id="13" timeBetweenCarsMs="6000" comment="upIn+downEnd">
+      <start x1="158" y1="2" x2="163" y2="2" direction="75"/>
+      <start x1="182" y1="3" x2="189" y2="3" direction="75"/>
+      <start x1="203" y1="3" x2="212" y2="3" direction="75"/>
+      <end x1="438" y1="765" x2="489" y2="764"/>
+	  <wall  x1="147" y1="6" x2="292" y2="396"/>
+	  <wall  x1="337" y1="326" x2="362" y2="396"/>
+	  <wall  x1="407" y1="526" x2="427" y2="561"/>
+	  <wall  x1="387" y1="651" x2="397" y2="706"/>
+	  <wall  x1="457" y1="661" x2="477" y2="716"/>
+	  <wall  x1="432" y1="331" x2="382" y2="376"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="14" timeBetweenCarsMs="9000" comment="upIn+rightEnd">
+      <start x1="247" y1="0" x2="252" y2="0" direction="75"/>
+      <start x1="265" y1="1" x2="270" y2="1" direction="75"/>
+      <end x1="1020" y1="144" x2="1020" y2="166"/>
+	  <wall  x1="357" y1="316" x2="377" y2="376"/>
+	  <wall  x1="392" y1="291" x2="422" y2="336"/>
+	  <wall  x1="432" y1="516" x2="497" y2="536"/>
+	  <wall  x1="617" y1="411" x2="712" y2="301"/>
+	  <wall  x1="632" y1="491" x2="677" y2="441"/>
+	  <wall  x1="682" y1="456" x2="727" y2="391"/>
+	  <wall  x1="647" y1="761" x2="637" y2="656"/>
+    </config>
+    <config id="15" timeBetweenCarsMs="11000" comment="upIn+upEnd">
+      <start x1="247" y1="1" x2="252" y2="1" direction="75"/>
+      <start x1="266" y1="2" x2="272" y2="2" direction="75"/>
+      <end x1="569" y1="1" x2="639" y2="1"/>
+	  <wall  x1="357" y1="316" x2="377" y2="376"/>
+	  <wall  x1="392" y1="291" x2="422" y2="336"/>
+	  <wall  x1="432" y1="516" x2="497" y2="536"/>
+	  <wall  x1="617" y1="411" x2="647" y2="341"/>
+	  <wall  x1="631" y1="491" x2="697" y2="401"/>
+	  <wall  x1="702" y1="416" x2="712" y2="301"/>
+	  <wall  x1="617" y1="196" x2="607" y2="151"/>
+	  <wall  x1="662" y1="761" x2="637" y2="656"/>	  
+	  <wall  x1="687" y1="156" x2="672" y2="121"/>
+	  <wall  x1="657" y1="61" x2="652" y2="26"/>
+    </config>
+  </routeConfigs>
+  <lightConfig>
+    <lights>
+      <light x1="805" y1="144" x2="789" y2="47" comment="rightIn"/>
+      <light x1="679" y1="590" x2="753" y2="593" comment="downIn"/>
+      <light x1="259" y1="624" x2="235" y2="569" comment="leftIn"/>
+      <light x1="257" y1="686" x2="231" y2="634" comment="leftIn turnRight"/>
+      <light x1="194" y1="198" x2="351" y2="161" comment="upIn"/>
+      <light x1="618" y1="204" x2="696" y2="195" comment="roundaboutRight"/>
+      <light x1="625" y1="497" x2="576" y2="439" comment="roundaboutDown"/>
+      <light x1="425" y1="513" x2="530" y2="472" comment="roundaboutLeft"/>
+      <light x1="334" y1="536" x2="410" y2="515" comment="roundaboutLeft2"/>
+      <light x1="429" y1="370" x2="390" y2="284" comment="roundaboutUp"/>
+      <light x1="575" y1="681" x2="601" y2="631" comment="downTurnAround"/>
+      <light x1="625" y1="585" x2="679" y2="589" comment="downIn turnLeft"/>
+    </lights>
+    <configs>
+      <config timeToWaitMs="15000" comment="VerticalFlow">
+        <light id="1"/>
+        <light id="4"/>
+        <light id="5"/>
+        <light id="7"/>
+        <light id="8"/>
+      </config>
+      <config timeToWaitMs="5000" comment="VerticalFlow+downTurnLeft">
+        <light id="1"/>
+        <light id="4"/>
+        <light id="5"/>
+        <light id="7"/>
+        <light id="8"/>
+        <light id="11"/>
+      </config>
+      <config timeToWaitMs="5000" comment="VerticalFlowRelax">
+        <light id="5"/>
+        <light id="7"/>
+        <light id="8"/>
+      </config>
+      <config timeToWaitMs="20000" comment="HorizonalFlow">
+        <light id="0"/>
+        <light id="2"/>
+        <light id="3"/>
+        <light id="6"/>
+        <light id="9"/>
+        <light id="10"/>
+      </config>
+      <config timeToWaitMs="5000" comment="HorizonalFlowRelax">
+        <light id="6"/>
+        <light id="9"/>
+      </config>
+    </configs>
+  </lightConfig>
+</TrafficSym2D>
