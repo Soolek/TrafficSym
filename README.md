@@ -2,6 +2,7 @@
 Traffic simulation using Lattice Boltzmann Method for trajectories
 
 See [this youtube video](https://www.youtube.com/watch?v=rK6cf9I1Hfw) for more details.
+
 ![video thumbnail](https://img.youtube.com/vi/rK6cf9I1Hfw/0.jpg)
 
 # TODO
