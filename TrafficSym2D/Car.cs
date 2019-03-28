@@ -4,12 +4,12 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
+//using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
+//using Microsoft.Xna.Framework.Net;
+//using Microsoft.Xna.Framework.Storage;
 
 namespace TrafficSym2D
 {
@@ -704,7 +704,7 @@ namespace TrafficSym2D
             accelerating = (acc > 0f);
 
             //update fizyki
-            float elapsedSeconds = (float)gameTime.ElapsedRealTime.TotalSeconds;
+            float elapsedSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
             // predkosc
             velocity += acc * elapsedSeconds;
             bool forward = (velocity > 0f);

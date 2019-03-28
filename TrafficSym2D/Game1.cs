@@ -4,12 +4,12 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
+//using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
+//using Microsoft.Xna.Framework.Net;
+//using Microsoft.Xna.Framework.Storage;
 using System.Xml;
 using System.IO;
 
@@ -290,7 +290,7 @@ namespace TrafficSym2D
             if (File.Exists("map_b.bmp"))
             {
                 FileStream fs = File.Open("map_b.bmp", FileMode.Open);
-                mapBackgroundTexture = Texture2D.FromFile(GraphicsDevice, fs);
+                mapBackgroundTexture = Texture2D.FromStream(GraphicsDevice, fs);
                 fs.Close();
             }
             else
@@ -301,7 +301,7 @@ namespace TrafficSym2D
             if (File.Exists("map_l.tga"))
             {
                 FileStream fs = File.Open("map_l.tga", FileMode.Open);
-                mapLogicTexture = Texture2D.FromFile(GraphicsDevice, fs);
+                mapLogicTexture = Texture2D.FromStream(GraphicsDevice, fs);
                 fs.Close();
             }
             else
@@ -310,7 +310,7 @@ namespace TrafficSym2D
             }
 
             //font
-            defaultFont = Content.Load<SpriteFont>("DefaultFont");
+            defaultFont = Content.Load<SpriteFont>("arial12");
 
             //dodatki do auta
             texAcc = Content.Load<Texture2D>("car_gadgets\\acc");
@@ -329,6 +329,10 @@ namespace TrafficSym2D
             for (int i = 0; i < routeConfigList.Count; i++)
                 tabLBM[i] = new LBMElement[countX, countY];
 
+            //getting all color data beforehand
+            Color[] colorMap = new Color[resX * resY];
+            mapLogicTexture.GetData<Color>(0, new Rectangle(0, 0, resX, resY), colorMap, 0, resX * resY);
+
             //okreslanie tabLogicMap + instancjonowanie tabeli elementow
             for (int x = 0; x < countX; x++)
                 for (int y = 0; y < countY; y++)
@@ -345,10 +349,11 @@ namespace TrafficSym2D
                         for (int ty = y * elementSize; ((ty < y * elementSize + elementSize) && (ty < resY)); ty++)
                         {
                             if (wall) break;
-                            Rectangle sourceRectangle = new Rectangle(tx, ty, 1, 1);
-                            Color[] retrievedColor = new Color[1];
-                            mapLogicTexture.GetData<Color>(0, sourceRectangle, retrievedColor, 0, 1);
-                            if ((retrievedColor[0].A > 254) && (retrievedColor[0].G > 128))
+                            //Rectangle sourceRectangle = new Rectangle(tx, ty, 1, 1);
+                            //Color[] retrievedColor = new Color[1];
+                            //mapLogicTexture.GetData<Color>(0, sourceRectangle, retrievedColor, 0, 1);
+                            var retrievedColor = colorMap[ty * resX + tx];
+                            if ((retrievedColor.A > 254) && (retrievedColor.G > 128))
                                 wall = true;
                         }
                     }
@@ -394,8 +399,7 @@ namespace TrafficSym2D
 
         protected override void Update(GameTime gameTime)
         {
-            GameTime customGameTime = gameTime;
-            customGameTime = new GameTime(gameTime.TotalRealTime, new TimeSpan(200000), gameTime.TotalGameTime, gameTime.ElapsedGameTime);
+            //GameTime customGameTime = new GameTime(gameTime.TotalRealTime, new TimeSpan(200000), gameTime.TotalGameTime, gameTime.ElapsedGameTime);
 
             // Allows the game to exit
             KeyboardState keybstate = Keyboard.GetState();
@@ -508,7 +512,7 @@ namespace TrafficSym2D
                     if (lightConfigId == -1)
                     {
                         lightConfigId = 0;
-                        lightLastChangeTime = gameTime.TotalRealTime;
+                        lightLastChangeTime = gameTime.TotalGameTime;
                         for (int x = 0; x < lightList.Count; x++)
                             if (!lightConfigList[lightConfigId].lightId.Contains(x)) //jak zawiera oznacza ze ma byc to swiatlo zielone i nie malowac...
                             {
@@ -522,15 +526,15 @@ namespace TrafficSym2D
                         for (int i = 0; i < routeConfigList.Count; i++)
                         {
                             RouteConfig rc = routeConfigList[i];
-                            if (gameTime.TotalRealTime.TotalMilliseconds > (rc.lastCarOutTime.TotalMilliseconds + rc.timeBetweenCarsMs))
+                            if (gameTime.TotalGameTime.TotalMilliseconds > (rc.lastCarOutTime.TotalMilliseconds + rc.timeBetweenCarsMs))
                             {
-                                rc.lastCarOutTime = gameTime.TotalRealTime;
+                                rc.lastCarOutTime = gameTime.TotalGameTime;
                                 AddNewCar(i, gameTime);
                             }
                         }
 
                     //zmiana swiatel
-                    if (gameTime.TotalRealTime.TotalMilliseconds > (lightLastChangeTime.TotalMilliseconds + lightConfigList[lightConfigId].timeToWaitMs))
+                    if (gameTime.TotalGameTime.TotalMilliseconds > (lightLastChangeTime.TotalMilliseconds + lightConfigList[lightConfigId].timeToWaitMs))
                     {
                         //malowanie powrotne pustych kratek
                         for (int x = 0; x < lightList.Count; x++)
@@ -541,7 +545,7 @@ namespace TrafficSym2D
                         //malowanie nowych scian
                         lightConfigId++;
                         if (lightConfigId > (lightConfigList.Count - 1)) lightConfigId = 0;
-                        lightLastChangeTime = gameTime.TotalRealTime;
+                        lightLastChangeTime = gameTime.TotalGameTime;
                         for (int x = 0; x < lightList.Count; x++)
                             if (!lightConfigList[lightConfigId].lightId.Contains(x)) //jak zawiera oznacza ze ma byc to swiatlo zielone i nie malowac...
                             {
@@ -563,7 +567,7 @@ namespace TrafficSym2D
                     }
                     if (car.Equals(selectedCar)) car.DoManualSteer(keybstate);
 
-                    car.Update(customGameTime);
+                    car.Update(gameTime);
                     //wywalanie z listy jak dojechal do konca
                     if (((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1))
                         carsToRemove.Add(car);
@@ -582,7 +586,7 @@ namespace TrafficSym2D
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin(SpriteBlendMode.AlphaBlend);
+            spriteBatch.Begin(blendState: BlendState.AlphaBlend);
 
             KeyboardState keybstate = Keyboard.GetState();
 
