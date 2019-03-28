@@ -29,7 +29,7 @@ namespace TrafficSym2D
     /// Created: 19.04.2009
     /// Symulator ruchu ulicznego 2D
     /// </summary>
-    public class Game1 : Microsoft.Xna.Framework.Game
+    public class Game1 : Game
     {
         const int resX = 1024;
         const int resY = 768;
