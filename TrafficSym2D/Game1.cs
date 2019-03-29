@@ -88,6 +88,8 @@ namespace TrafficSym2D
         public static int carSpritesCount = 4;
         public List<Car> cars = new List<Car>();
         public Car selectedCar;
+        private int currentCarCount = 0;
+        private long finishedCarCount = 0;
 
         //implementacja LBM
         public LBMElement[,] lightTabLBM; //dodatkowe sciany do swiatel
@@ -266,6 +268,7 @@ namespace TrafficSym2D
                         XmlNode xmlNodeMain = xmlConfig.ChildNodes.Item(i);
                         LightConfig lc = new LightConfig();
                         lc.timeToWaitMs = Convert.ToInt32(xmlNodeMain.Attributes["timeToWaitMs"].Value);
+                        lc.comment = xmlNodeMain.Attributes["comment"].Value;
 
                         for (int i2 = 0; i2 < xmlNodeMain.ChildNodes.Count; i2++)
                         {
@@ -559,20 +562,33 @@ namespace TrafficSym2D
                 //cars
                 Parallel.ForEach(cars, car =>
                 {
-                    //sterowanie ai
-                    if (doAi)
+                    try
                     {
-                        car.DoAI(tabLBM[car.tabLBMIndex]);
-                    }
-                    if (car.Equals(selectedCar)) car.DoManualSteer(keybstate);
+                        //sterowanie ai
+                        if (doAi)
+                        {
+                            car.DoAI(tabLBM[car.tabLBMIndex]);
+                        }
+                        if (car.Equals(selectedCar)) car.DoManualSteer(keybstate);
 
-                    car.Update(gameTime);
-                    //wywalanie z listy jak dojechal do konca
-                    if (((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1))
+                        car.Update(gameTime);
+                        //wywalanie z listy jak dojechal do konca
+                        if (((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1))
+                            carsToRemove.Add(car);
+                        else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isHole)
+                            carsToRemove.Add(car);
+                    }
+                    catch(Exception e)
+                    {
+#if DEBUG
+                        throw e;
+#endif
                         carsToRemove.Add(car);
-                    else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isHole)
-                        carsToRemove.Add(car);
+                    }
                 });
+
+                currentCarCount = cars.Count;
+                finishedCarCount += carsToRemove.Count;
 
                 foreach (Car car in carsToRemove)
                     cars.Remove(car);
@@ -738,36 +754,42 @@ namespace TrafficSym2D
                         }
                     }
 
-                //info o wybranym aucie
+                int lineDraw = 0;
+                //simulation state
+                spriteBatch.DrawString(defaultFont, "Auto: " + doAutomaticCars.ToString(), new Vector2(1, lineDraw+=20), Color.White);
+                //light state
+                spriteBatch.DrawString(defaultFont, string.Format("Light id:{0} c:{1}", lightConfigId, lightConfigList[lightConfigId].comment), new Vector2(1, lineDraw += 20), Color.White);
+                //car counter
+                spriteBatch.DrawString(defaultFont, string.Format("cars:{0} finished:{1}", currentCarCount, finishedCarCount), new Vector2(1, lineDraw += 20), Color.White);
+
+                //selected car info
                 if (selectedCar != null && cars.Contains(selectedCar))
                 {
-                    //wypisanie danych auta
-                    spriteBatch.DrawString(defaultFont, "aggressiveness: " + selectedCar.aggressiveness.ToString(), new Vector2(1, 40), Color.White);
-                    spriteBatch.DrawString(defaultFont, "Pos: x: " + selectedCar.position.X.ToString() + " y: " + selectedCar.position.X.ToString(), new Vector2(1, 60), Color.White);
-                    spriteBatch.DrawString(defaultFont, "userSteer: " + selectedCar.userSteer.ToString(), new Vector2(1, 80), Color.White);
-                    spriteBatch.DrawString(defaultFont, "userAcc: " + selectedCar.userAcc, new Vector2(1, 100), Color.White);
-                    spriteBatch.DrawString(defaultFont, "V: " + selectedCar.velocity.ToString(), new Vector2(1, 120), Color.White);
-                    //wyswietlanie sterowania
-                    //tlo
-                    spriteBatch.Draw(texWall, new Rectangle(1, 140, 50, 50), Color.Black);
+                    //car data
+                    spriteBatch.DrawString(defaultFont, "aggressiveness: " + selectedCar.aggressiveness.ToString(), new Vector2(1, lineDraw += 20), Color.White);
+                    spriteBatch.DrawString(defaultFont, "Pos: x: " + selectedCar.position.X.ToString() + " y: " + selectedCar.position.X.ToString(), new Vector2(1, lineDraw += 20), Color.White);
+                    spriteBatch.DrawString(defaultFont, "userSteer: " + selectedCar.userSteer.ToString(), new Vector2(1, lineDraw += 20), Color.White);
+                    spriteBatch.DrawString(defaultFont, "userAcc: " + selectedCar.userAcc, new Vector2(1, lineDraw += 20), Color.White);
+                    spriteBatch.DrawString(defaultFont, "V: " + selectedCar.velocity.ToString(), new Vector2(1, lineDraw += 20), Color.White);
+                    //steering
+                    lineDraw += 20;
+                    //background
+                    spriteBatch.Draw(texWall, new Rectangle(1, lineDraw, 50, 50), Color.Black);
                     //axis
-                    spriteBatch.Draw(texWall, new Rectangle(1, 165, 50, 1), Color.White);
-                    spriteBatch.Draw(texWall, new Rectangle(25, 140, 1, 50), Color.White);
+                    spriteBatch.Draw(texWall, new Rectangle(1, lineDraw+25, 50, 1), Color.White);
+                    spriteBatch.Draw(texWall, new Rectangle(25, lineDraw, 1, 50), Color.White);
                     //joystick
-                    spriteBatch.Draw(texWall, new Rectangle((int)(20 * selectedCar.userSteer) + 20, (int)(20 * -selectedCar.userAcc) + 140 + 20, 10, 10), Color.HotPink);
+                    spriteBatch.Draw(texWall, new Rectangle((int)(20 * selectedCar.userSteer) + 20, (int)(20 * -selectedCar.userAcc) + lineDraw + 20, 10, 10), Color.HotPink);
 
-                    //zaznaczenie auta?
+                    //car selection
                     DrawLine(texWall, selectedCar.framePointFL, selectedCar.framePointFR, Color.HotPink);
                     DrawLine(texWall, selectedCar.framePointFR, selectedCar.framePointRR, Color.HotPink);
                     DrawLine(texWall, selectedCar.framePointRR, selectedCar.framePointRL, Color.HotPink);
                     DrawLine(texWall, selectedCar.framePointRL, selectedCar.framePointFL, Color.HotPink);
 
-                    //linia od kursora do auta
+                    //line from cursor to car
                     DrawLine(texWall, selectedCar.position, mouseVector, Color.HotPink);
                 }
-                spriteBatch.DrawString(defaultFont, "Auto: " + doAutomaticCars.ToString(), new Vector2(1, 20), Color.White);
-                //id swiatel
-                spriteBatch.DrawString(defaultFont, "lightConfigId: " + lightConfigId.ToString(), new Vector2(80, 20), Color.White);
             }
 
             //gameState

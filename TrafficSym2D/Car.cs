@@ -58,7 +58,6 @@ namespace TrafficSym2D
 
         public Vector2 position;
         private Vector2 prevPosition;
-        private int stopCounter;
         private float rotation;
         public float getRotation()
         {
@@ -391,42 +390,7 @@ namespace TrafficSym2D
             }
             #endregion
 
-            #region przyspieszenie - taki trick by jak stoja dlugo to by cos sie ruszylo w sytuacji patowej
-            if (intersectsSmth && (stopCounter + (int)(10 * aggressiveness) > 10) && (velocity < 0.5f))
-            {
-                bool isInSmth = false;
-                if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(framePointFL)))
-                    isInSmth = true;
-                else if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(framePointFR)))
-                    isInSmth = true;
-                else if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(framePointRR)))
-                    isInSmth = true;
-                else if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(framePointRL)))
-                    isInSmth = true;
-
-                if (isInSmth)
-                    userAcc = 1;
-                else //literowanie przez auta i jesli jest w ktoryms...
-                {
-                    foreach (Car car in parent.cars)
-                        if ((car.position - this.position).Length() <= (2 * spriteHeight))
-                        {
-                            if (IntersectsOtherCarWithBack(car))
-                            {
-                                userAcc = 1;
-                                break;
-                            }
-                            if (IntersectsOtherCarWithFront(car))
-                            {
-                                if (velocity > 0) userAcc = -velocity;
-                                break;
-                            }
-                        }
-                }
-            }
-            #endregion
-
-            #region skrecanie - by nie wyjezdzac poza pasy - korekcja po dazeniu do celu
+            #region turning to avoid crossing lane markings - correction after vector map base
             bool laneDone = false;
 
             //jedziemy od zew krancow
@@ -436,7 +400,7 @@ namespace TrafficSym2D
                 Color c = parent.GetColorFromLogicMapAtPoint(framePointF + (leftSeeker * i));
                 if (c.A > 254 && c.B > 128)
                 {
-                    userSteer = 1;
+                    userSteer += 0.5f;
                     laneDone = true;
                 }
                 else
@@ -444,7 +408,7 @@ namespace TrafficSym2D
                     c = parent.GetColorFromLogicMapAtPoint(framePointF - (leftSeeker * i));
                     if (c.A > 254 && c.B > 128)
                     {
-                        userSteer = -1;
+                        userSteer -= -0.5f;
                         laneDone = true;
                     }
                 }
@@ -452,8 +416,8 @@ namespace TrafficSym2D
 
             #endregion
 
-            #region skrecanie - jak jedzie wolno to jesli moze niech wyminie auto przed nim
-            if (velocity < 4f) //distance przy jakim bedzie zwalniac to max 8px
+            #region turning to overtake slow cars
+            if (velocity < 4f)
             {
                 float frontDetector = dist * pixelToMeterRatio + parent.elementSize2 + 1f;
                 Vector2 frontBumperL = framePointF + frontDetector * frontSeeker + (leftSeeker * (scale * spriteWidth * 0.55f + dist * 3f));
@@ -462,21 +426,23 @@ namespace TrafficSym2D
                 bool frontBumterLintersects = false;
                 bool frontBumterRintersects = false;
 
-                foreach (Car car in parent.cars)
+                Parallel.ForEach(parent.cars, otherCar =>
                 {
-                    if (frontBumterLintersects && frontBumterRintersects) break;
-                    if (!car.Equals(this) && ((car.position - this.position).Length() <= (2 * spriteHeight)))
+                    if (frontBumterLintersects && frontBumterRintersects) 
+                        return;
+
+                    if (!otherCar.Equals(this) && ((otherCar.position - this.position).Length() <= (2 * spriteHeight)))
                     {
-                        if (OrientationHelper.Intersection(frontBumperL, position, car.framePointRL, car.framePointRR)
-                            || OrientationHelper.Intersection(frontBumperL, position, car.framePointRL, car.framePointFL)
-                            || OrientationHelper.Intersection(frontBumperL, position, car.framePointRR, car.framePointRR))
+                        if (OrientationHelper.Intersection(frontBumperL, position, otherCar.framePointRL, otherCar.framePointRR)
+                            || OrientationHelper.Intersection(frontBumperL, position, otherCar.framePointRL, otherCar.framePointFL)
+                            || OrientationHelper.Intersection(frontBumperL, position, otherCar.framePointRR, otherCar.framePointRR))
                             frontBumterLintersects = true;
-                        if (OrientationHelper.Intersection(frontBumperR, position, car.framePointRL, car.framePointRR)
-                            || OrientationHelper.Intersection(frontBumperR, position, car.framePointRL, car.framePointFL)
-                            || OrientationHelper.Intersection(frontBumperR, position, car.framePointRR, car.framePointRR))
+                        if (OrientationHelper.Intersection(frontBumperR, position, otherCar.framePointRL, otherCar.framePointRR)
+                            || OrientationHelper.Intersection(frontBumperR, position, otherCar.framePointRL, otherCar.framePointFL)
+                            || OrientationHelper.Intersection(frontBumperR, position, otherCar.framePointRR, otherCar.framePointRR))
                             frontBumterRintersects = true;
                     }
-                }
+                });
 
                 //jak tylko jeden z nich zostal wykryty to mozna zaczac wymijanie
                 //XOR :)
@@ -505,10 +471,10 @@ namespace TrafficSym2D
             }
             #endregion
 
-            #region skrecanie - by nie wjechac w inne auta
-            foreach (Car car in parent.cars)
+            #region turning to avoid other cars
+            Parallel.ForEach(parent.cars, otherCar =>
             {
-                if (!car.Equals(this) && ((car.position - this.position).Length() <= (2 * spriteHeight)))
+                if (!otherCar.Equals(this) && ((otherCar.position - this.position).Length() <= (2 * spriteHeight)))
                 {
                     Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
                     //specialnie poszerzony przedni zderzak by najpierw odbil a potem hamowal
@@ -531,25 +497,19 @@ namespace TrafficSym2D
 
                         //sprawdzanie czy punkt sprawdzajacy jest wewnatrz ramek auta
                         //wystarczy sprawdzic czy przecina sie z ktoras z ramek auta
-                        if (OrientationHelper.Intersection(posBumperRight, position, car.framePointFL, car.framePointFR))
+                        if ((OrientationHelper.Intersection(posBumperRight, position, otherCar.framePointFL, otherCar.framePointFR))
+                            || (OrientationHelper.Intersection(posBumperRight, position, otherCar.framePointFR, otherCar.framePointRR))
+                            || (OrientationHelper.Intersection(posBumperRight, position, otherCar.framePointRR, otherCar.framePointRL))
+                            || (OrientationHelper.Intersection(posBumperRight, position, otherCar.framePointRL, otherCar.framePointFL)))
                             userSteer = -1;
-                        else if (OrientationHelper.Intersection(posBumperRight, position, car.framePointFR, car.framePointRR))
-                            userSteer = -1;
-                        else if (OrientationHelper.Intersection(posBumperRight, position, car.framePointRR, car.framePointRL))
-                            userSteer = -1;
-                        else if (OrientationHelper.Intersection(posBumperRight, position, car.framePointRL, car.framePointFL))
-                            userSteer = -1;
-                        else if (OrientationHelper.Intersection(posBumperLeft, position, car.framePointFL, car.framePointFR))
-                            userSteer = 1;
-                        else if (OrientationHelper.Intersection(posBumperLeft, position, car.framePointFR, car.framePointRR))
-                            userSteer = 1;
-                        else if (OrientationHelper.Intersection(posBumperLeft, position, car.framePointRR, car.framePointRL))
-                            userSteer = 1;
-                        else if (OrientationHelper.Intersection(posBumperLeft, position, car.framePointRL, car.framePointFL))
+                        else if ((OrientationHelper.Intersection(posBumperLeft, position, otherCar.framePointFL, otherCar.framePointFR))
+                            || (OrientationHelper.Intersection(posBumperLeft, position, otherCar.framePointFR, otherCar.framePointRR))
+                            || (OrientationHelper.Intersection(posBumperLeft, position, otherCar.framePointRR, otherCar.framePointRL))
+                            || (OrientationHelper.Intersection(posBumperLeft, position, otherCar.framePointRL, otherCar.framePointFL)))
                             userSteer = 1;
                     }
                 }
-            }
+            });
             #endregion
 
             #region skrecanie - nie wjezdzanie na chodnik
@@ -700,12 +660,6 @@ namespace TrafficSym2D
             prevPosition = position;
             position.X += (float)(Math.Cos(rotation) * velocity * elapsedSeconds * pixelToMeterRatio);
             position.Y += (float)(Math.Sin(rotation) * velocity * elapsedSeconds * pixelToMeterRatio);
-
-            //liczniki stopu
-            if (((int)(prevPosition.X) == (int)(position.X)) && ((int)(prevPosition.Y) == (int)(position.Y)))
-                stopCounter++;
-            else
-                stopCounter = 0;
 
             //zmienne pomocnicze by nie liczyc wszystkiego pare razy...
             Vector2 front = new Vector2(), rear = new Vector2(), left = new Vector2();

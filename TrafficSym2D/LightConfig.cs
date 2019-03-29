@@ -8,6 +8,7 @@ namespace TrafficSym2D
     public class LightConfig
     {
         public int timeToWaitMs;
+        public string comment;
         public List<int> lightId = new List<int>();
     }
 }
