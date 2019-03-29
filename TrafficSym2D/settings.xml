@@ -274,23 +274,6 @@
         <light id="4"/>
         <light id="12"/>
       </config>
-      <config timeToWaitMs="5000" comment="FreezeAll">
-      </config>
-      <config timeToWaitMs="19000" comment="FreeForAll">
-        <light id="0"/>
-        <light id="1"/>
-        <light id="2"/>
-        <light id="3"/>
-        <light id="4"/>
-        <light id="5"/>
-        <light id="6"/>
-        <light id="7"/>
-        <light id="8"/>
-        <light id="9"/>
-        <light id="10"/>
-        <light id="11"/>
-        <light id="12"/>
-      </config>
     </configs>
   </lightConfig>
 </TrafficSym2D>

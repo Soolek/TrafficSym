@@ -557,7 +557,6 @@ namespace TrafficSym2D
                 List<Car> carsToRemove = new List<Car>();
 
                 //cars
-                //foreach (Car car in cars)
                 Parallel.ForEach(cars, car =>
                 {
                     //sterowanie ai

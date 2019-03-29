@@ -262,103 +262,65 @@ namespace TrafficSym2D
                 posBumperFront.X = framePointF.X + ((float)Math.Cos(rotation) * dist2);
                 posBumperFront.Y = framePointF.Y + ((float)Math.Sin(rotation) * dist2);
 
-                //foreach (Car car in parent.cars)
-                Parallel.ForEach(parent.cars, car =>
+                Parallel.ForEach(parent.cars, otherCar =>
                 {
-                    if (userAcc == -1 || car.Equals(this)) return;
-                    
+                    if (userAcc == -1 || otherCar.Equals(this)) return;
+
+                    //sprawdzanie czy punkt sprawdzajacy jest wewnatrz ramek auta
+                    //wystarczy sprawdzic czy przecina sie z ktoras z ramek auta
+
+                    //sprawdzamy jak nasze i(czujka)+dlugosc auta jest wieksze od roznicy odleglosci aut
+                    if ((otherCar.position - this.position).Length() <= (dist + 2 * spriteHeight))
                     {
-                        //sprawdzanie czy punkt sprawdzajacy jest wewnatrz ramek auta
-                        //wystarczy sprawdzic czy przecina sie z ktoras z ramek auta
-
-                        //sprawdzamy jak nasze i(czujka)+dlugosc auta jest wieksze od roznicy odleglosci aut
-                        if ((car.position - this.position).Length() <= (dist + 2 * spriteHeight))
+                        if ((OrientationHelper.Intersection(posBumperLeftCar, position, otherCar.framePointFL, otherCar.framePointFR))
+                            || (OrientationHelper.Intersection(posBumperLeftCar, position, otherCar.framePointFR, otherCar.framePointRR))
+                            || (OrientationHelper.Intersection(posBumperLeftCar, position, otherCar.framePointRR, otherCar.framePointRL))
+                            || (OrientationHelper.Intersection(posBumperLeftCar, position, otherCar.framePointRL, otherCar.framePointFL))
+                            || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointFL, otherCar.framePointFR))
+                            || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointFR, otherCar.framePointRR))
+                            || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointRR, otherCar.framePointRL))
+                            || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointRL, otherCar.framePointFL))
+                            || (OrientationHelper.Intersection(posBumperFront, position, otherCar.framePointRR, otherCar.framePointRL)) )
                         {
-                            #region lewy
-                            if (OrientationHelper.Intersection(posBumperLeftCar, position, car.framePointFL, car.framePointFR))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            else if (OrientationHelper.Intersection(posBumperLeftCar, position, car.framePointFR, car.framePointRR))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            else if (OrientationHelper.Intersection(posBumperLeftCar, position, car.framePointRR, car.framePointRL))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            else if (OrientationHelper.Intersection(posBumperLeftCar, position, car.framePointRL, car.framePointFL))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            #endregion
-                            #region prawy
-                            else if (OrientationHelper.Intersection(posBumperRightCar, position, car.framePointFL, car.framePointFR))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            else if (OrientationHelper.Intersection(posBumperRightCar, position, car.framePointFR, car.framePointRR))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            else if (OrientationHelper.Intersection(posBumperRightCar, position, car.framePointRR, car.framePointRL))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            else if (OrientationHelper.Intersection(posBumperRightCar, position, car.framePointRL, car.framePointFL))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            #endregion
-                            #region na koncu sprawdzamy poprostu od przodu tylko tylni zderzak
-                            else if (OrientationHelper.Intersection(posBumperFront, position, car.framePointRR, car.framePointRL))
-                            {
-                                intersectsSmth = true;
-                                userAcc = (velocity == 0 ? -1 : -velocity);
-                            }
-                            #endregion
-                            #region puszczanie z prawej...
-                            else
-                            {
-                                float angleOtherCar = (float)Math.Atan2(car.position.Y - position.Y, car.position.X - position.X);
-                                angleOtherCar -= desiredAngle;
-                                angleOtherCar = GeneralHelper.NormalizeAngle(angleOtherCar);
+                            intersectsSmth = true;
+                            userAcc = (velocity == 0 ? -1 : -velocity);
+                            if(this.IntersectsOtherCar(otherCar))
+                                SeparateCars(this, otherCar);
+                        }
+                        
+                        #region puszczanie z prawej...
+                        else
+                        {
+                            float angleOtherCar = (float)Math.Atan2(otherCar.position.Y - position.Y, otherCar.position.X - position.X);
+                            angleOtherCar -= desiredAngle;
+                            angleOtherCar = GeneralHelper.NormalizeAngle(angleOtherCar);
 
-                                if ((angleOtherCar > 0f) && (angleOtherCar < MathHelper.PiOver2)) //jak miedzy 0 a 90 stopni i wystarczajaco blisko
+                            if ((angleOtherCar > 0f) && (angleOtherCar < MathHelper.PiOver2)) //jak miedzy 0 a 90 stopni i wystarczajaco blisko
+                            {
+                                float angleRelative = GeneralHelper.NormalizeAngle(desiredAngle - otherCar.rotation);
+                                float param = (float)Math.Sin(angleRelative);
+
+                                Vector2 tempv = framePointFR - otherCar.framePointFL;
+                                float lengthDiff = tempv.Length();
+                                tempv = framePointFR - otherCar.position;
+                                if (tempv.Length() < lengthDiff) lengthDiff = tempv.Length();
+                                tempv = framePointFR - otherCar.framePointRL;
+                                if (tempv.Length() < lengthDiff) lengthDiff = tempv.Length();
+
+                                float vel = otherCar.velocity;
+                                if ((vel < 3f) && (vel > 0.1f)) vel = 3f;
+
+                                float addParam = spriteWidth / 2f;
+                                if ((vel * velocity) < 1f) addParam *= (vel * velocity);
+
+                                if (((vel * velocity * pixelToMeterRatio / otherCar.force_braking + addParam) * param) > lengthDiff)
                                 {
-                                    float angleRelative = GeneralHelper.NormalizeAngle(desiredAngle - car.rotation);
-                                    float param = (float)Math.Sin(angleRelative);
-
-                                    Vector2 tempv = framePointFR - car.framePointFL;
-                                    float lengthDiff = tempv.Length();
-                                    tempv = framePointFR - car.position;
-                                    if (tempv.Length() < lengthDiff) lengthDiff = tempv.Length();
-                                    tempv = framePointFR - car.framePointRL;
-                                    if (tempv.Length() < lengthDiff) lengthDiff = tempv.Length();
-
-                                    float vel = car.velocity;
-                                    if ((vel < 3f) && (vel > 0.1f)) vel = 3f;
-
-                                    float addParam = spriteWidth / 2f;
-                                    if ((vel * velocity) < 1f) addParam *= (vel * velocity);
-
-                                    if (((vel * velocity * pixelToMeterRatio / car.force_braking + addParam) * param) > lengthDiff)
-                                    {
-                                        intersectsSmth = true;
-                                        userAcc = (velocity <= 0 ? 0 : -velocity);
-                                    }
+                                    intersectsSmth = true;
+                                    userAcc = (velocity <= 0 ? 0 : -velocity);
                                 }
                             }
-                            #endregion
                         }
+                        #endregion
                     }
                 });
             }
@@ -542,7 +504,7 @@ namespace TrafficSym2D
                     userSteer = 1;
             }
             #endregion
-            
+
             #region skrecanie - by nie wjechac w inne auta
             foreach (Car car in parent.cars)
             {
@@ -654,6 +616,19 @@ namespace TrafficSym2D
             //jak jedzie do tylu to zeby skrecil na odwrot...
             if (velocity < 0)
                 userSteer *= -1f;
+        }
+
+        /// <summary>
+        /// Moves both cars from eachother to separate them
+        /// </summary>
+        const float separateDistance = 0.5f;
+        private void SeparateCars(Car car1, Car car2)
+        {
+            var car1ToCar2Angle = Math.Atan2(car2.position.Y - car1.position.Y, car2.position.X - car1.position.X);
+            car2.position.X += (float)(Math.Cos(car1ToCar2Angle) * separateDistance);
+            car2.position.Y += (float)(Math.Sin(car1ToCar2Angle) * separateDistance);
+            car1.position.X -= (float)(Math.Cos(car1ToCar2Angle) * separateDistance);
+            car1.position.Y -= (float)(Math.Sin(car1ToCar2Angle) * separateDistance);
         }
 
         /// <summary>
@@ -792,13 +767,10 @@ namespace TrafficSym2D
                         case 4: frameCheck = framePointFL; break;
                     }
 
-                    if (OrientationHelper.Intersection(frameCheck, position, car.framePointFL, car.framePointFR))
-                        return true;
-                    else if (OrientationHelper.Intersection(frameCheck, position, car.framePointFR, car.framePointRR))
-                        return true;
-                    else if (OrientationHelper.Intersection(frameCheck, position, car.framePointRR, car.framePointRL))
-                        return true;
-                    else if (OrientationHelper.Intersection(frameCheck, position, car.framePointRL, car.framePointFL))
+                    if ((OrientationHelper.Intersection(frameCheck, position, car.framePointFL, car.framePointFR))
+                    || (OrientationHelper.Intersection(frameCheck, position, car.framePointFR, car.framePointRR))
+                    || (OrientationHelper.Intersection(frameCheck, position, car.framePointRR, car.framePointRL))
+                    || (OrientationHelper.Intersection(frameCheck, position, car.framePointRL, car.framePointFL)))
                         return true;
                 }
             }
