@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Media;
 //using Microsoft.Xna.Framework.Storage;
 using System.Xml;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace TrafficSym2D
 {
@@ -277,6 +278,7 @@ namespace TrafficSym2D
             }
         }
 
+        internal Color[] _colorMap;
         protected override void LoadContent()
         {
             this.IsMouseVisible = true;
@@ -330,8 +332,8 @@ namespace TrafficSym2D
                 tabLBM[i] = new LBMElement[countX, countY];
 
             //getting all color data beforehand
-            Color[] colorMap = new Color[resX * resY];
-            mapLogicTexture.GetData<Color>(0, new Rectangle(0, 0, resX, resY), colorMap, 0, resX * resY);
+            _colorMap = new Color[resX * resY];
+            mapLogicTexture.GetData<Color>(0, new Rectangle(0, 0, resX, resY), _colorMap, 0, resX * resY);
 
             //okreslanie tabLogicMap + instancjonowanie tabeli elementow
             for (int x = 0; x < countX; x++)
@@ -349,10 +351,7 @@ namespace TrafficSym2D
                         for (int ty = y * elementSize; ((ty < y * elementSize + elementSize) && (ty < resY)); ty++)
                         {
                             if (wall) break;
-                            //Rectangle sourceRectangle = new Rectangle(tx, ty, 1, 1);
-                            //Color[] retrievedColor = new Color[1];
-                            //mapLogicTexture.GetData<Color>(0, sourceRectangle, retrievedColor, 0, 1);
-                            var retrievedColor = colorMap[ty * resX + tx];
+                            var retrievedColor = _colorMap[ty * resX + tx];
                             if ((retrievedColor.A > 254) && (retrievedColor.G > 128))
                                 wall = true;
                         }
@@ -558,7 +557,8 @@ namespace TrafficSym2D
                 List<Car> carsToRemove = new List<Car>();
 
                 //cars
-                foreach (Car car in cars)
+                //foreach (Car car in cars)
+                Parallel.ForEach(cars, car =>
                 {
                     //sterowanie ai
                     if (doAi)
@@ -573,7 +573,7 @@ namespace TrafficSym2D
                         carsToRemove.Add(car);
                     else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isHole)
                         carsToRemove.Add(car);
-                }
+                });
 
                 foreach (Car car in carsToRemove)
                     cars.Remove(car);
@@ -937,10 +937,7 @@ namespace TrafficSym2D
         {
             if (x >= resX) x = resX - 1; else if (x < 0) x = 0;
             if (y >= resY) y = resY - 1; else if (y < 0) y = 0;
-            Rectangle sourceRectangle = new Rectangle(x, y, 1, 1);
-            Color[] retrievedColor = new Color[1];
-            mapLogicTexture.GetData<Color>(0, sourceRectangle, retrievedColor, 0, 1);
-            return retrievedColor[0];
+            return _colorMap[y * resX + x];
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using System.Threading.Tasks;
 //using Microsoft.Xna.Framework.Net;
 //using Microsoft.Xna.Framework.Storage;
 
@@ -52,6 +53,9 @@ namespace TrafficSym2D
         private static float scale = 0.3f;// 64pix*0.21==13px~=2,5m przecietna dlugosc auta
 
         public Texture2D sprite;
+        int spriteHeight;
+        int spriteWidth;
+
         public Vector2 position;
         private Vector2 prevPosition;
         private int stopCounter;
@@ -109,9 +113,11 @@ namespace TrafficSym2D
         {
             parent = _parent;
             sprite = _sprite;
+            spriteHeight = _sprite.Height;
+            spriteWidth = _sprite.Width;
             position = _position;
             this.rotation = rotation;
-            center = new Vector2(sprite.Width / 2.0f, sprite.Height * 0.75f);
+            center = new Vector2(spriteWidth / 2.0f, spriteHeight * 0.75f);
             this.tabLBMIndex = tabLBMIndex;
             steer = 0f;
             acc = 0f;
@@ -119,10 +125,10 @@ namespace TrafficSym2D
             velocity = 0f;
             _aggressiveness = aggressiveness;
             //ustalanie fizyki na bazie wielkosci sprite'a
-            if (sprite.Height > 70)
+            if (spriteHeight > 70)
             {
-                force_acc *= (70f / (float)sprite.Height);
-                friction *= ((float)sprite.Height / 70f);
+                force_acc *= (70f / (float)spriteHeight);
+                friction *= ((float)spriteHeight / 70f);
             }
         }
 
@@ -224,7 +230,6 @@ namespace TrafficSym2D
 
             //punktowy vektor rownolegly z przednim zderzakiem
 
-
             #region przyspieszanie - sprawdzanie chodnika, swiatel oraz pozostalych uczestnikow ruchu by w nich nie wjechac, takze puszczanie z prawej
             float dist = velocity * velocity / force_braking;
             if (velocity < 0)
@@ -241,32 +246,33 @@ namespace TrafficSym2D
 
                 if (velocity > 0.05f)
                 {
-                    posBumperLeftCar.X = framePointFL.X + ((float)Math.Cos(rotation) * dist2) + (leftSeeker.X * scale * sprite.Width * 0.1f);
-                    posBumperLeftCar.Y = framePointFL.Y + ((float)Math.Sin(rotation) * dist2) + (leftSeeker.Y * scale * sprite.Width * 0.1f);
-                    posBumperRightCar.X = framePointFR.X + ((float)Math.Cos(rotation) * dist2) - (leftSeeker.X * scale * sprite.Width * 0.2f);
-                    posBumperRightCar.Y = framePointFR.Y + ((float)Math.Sin(rotation) * dist2) - (leftSeeker.Y * scale * sprite.Width * 0.2f);
+                    posBumperLeftCar.X = framePointFL.X + ((float)Math.Cos(rotation) * dist2) + (leftSeeker.X * scale * spriteWidth * 0.1f);
+                    posBumperLeftCar.Y = framePointFL.Y + ((float)Math.Sin(rotation) * dist2) + (leftSeeker.Y * scale * spriteWidth * 0.1f);
+                    posBumperRightCar.X = framePointFR.X + ((float)Math.Cos(rotation) * dist2) - (leftSeeker.X * scale * spriteWidth * 0.2f);
+                    posBumperRightCar.Y = framePointFR.Y + ((float)Math.Sin(rotation) * dist2) - (leftSeeker.Y * scale * spriteWidth * 0.2f);
                 }
                 else
                 {
-                    posBumperLeftCar.X = framePointFL.X + ((float)Math.Cos(rotation) * dist2) + (leftSeeker.X * scale * sprite.Width * 0.05f);
-                    posBumperLeftCar.Y = framePointFL.Y + ((float)Math.Sin(rotation) * dist2) + (leftSeeker.Y * scale * sprite.Width * 0.05f);
-                    posBumperRightCar.X = framePointFR.X + ((float)Math.Cos(rotation) * dist2) - (leftSeeker.X * scale * sprite.Width * 0.1f);
-                    posBumperRightCar.Y = framePointFR.Y + ((float)Math.Sin(rotation) * dist2) - (leftSeeker.Y * scale * sprite.Width * 0.1f);
+                    posBumperLeftCar.X = framePointFL.X + ((float)Math.Cos(rotation) * dist2) + (leftSeeker.X * scale * spriteWidth * 0.05f);
+                    posBumperLeftCar.Y = framePointFL.Y + ((float)Math.Sin(rotation) * dist2) + (leftSeeker.Y * scale * spriteWidth * 0.05f);
+                    posBumperRightCar.X = framePointFR.X + ((float)Math.Cos(rotation) * dist2) - (leftSeeker.X * scale * spriteWidth * 0.1f);
+                    posBumperRightCar.Y = framePointFR.Y + ((float)Math.Sin(rotation) * dist2) - (leftSeeker.Y * scale * spriteWidth * 0.1f);
                 }
 
                 posBumperFront.X = framePointF.X + ((float)Math.Cos(rotation) * dist2);
                 posBumperFront.Y = framePointF.Y + ((float)Math.Sin(rotation) * dist2);
 
-                foreach (Car car in parent.cars)
+                //foreach (Car car in parent.cars)
+                Parallel.ForEach(parent.cars, car =>
                 {
-                    if (userAcc == -1) break;
-                    if (!car.Equals(this))
+                    if (userAcc == -1 || car.Equals(this)) return;
+                    
                     {
                         //sprawdzanie czy punkt sprawdzajacy jest wewnatrz ramek auta
                         //wystarczy sprawdzic czy przecina sie z ktoras z ramek auta
 
                         //sprawdzamy jak nasze i(czujka)+dlugosc auta jest wieksze od roznicy odleglosci aut
-                        if ((car.position - this.position).Length() <= (dist + 2 * sprite.Height))
+                        if ((car.position - this.position).Length() <= (dist + 2 * spriteHeight))
                         {
                             #region lewy
                             if (OrientationHelper.Intersection(posBumperLeftCar, position, car.framePointFL, car.framePointFR))
@@ -341,7 +347,7 @@ namespace TrafficSym2D
                                     float vel = car.velocity;
                                     if ((vel < 3f) && (vel > 0.1f)) vel = 3f;
 
-                                    float addParam = sprite.Width / 2f;
+                                    float addParam = spriteWidth / 2f;
                                     if ((vel * velocity) < 1f) addParam *= (vel * velocity);
 
                                     if (((vel * velocity * pixelToMeterRatio / car.force_braking + addParam) * param) > lengthDiff)
@@ -354,7 +360,7 @@ namespace TrafficSym2D
                             #endregion
                         }
                     }
-                }
+                });
             }
             #endregion
 
@@ -381,25 +387,22 @@ namespace TrafficSym2D
                 #region chodnik olewamy jak jedziemy powoli
                 if (velocity > 0.5f)
                 {
-                    Rectangle sourceRectangle = new Rectangle((int)posBumperLeft.X, (int)posBumperLeft.Y, 1, 1);
-                    Color[] retrievedColor = new Color[1];
-                    parent.mapLogicTexture.GetData<Color>(0, sourceRectangle, retrievedColor, 0, 1);
+                    Color retrievedColor = parent.GetColorFromLogicMapAtPoint((int)posBumperLeft.X, (int)posBumperLeft.Y);
 
                     tx = (int)(posBumperLeft.X / (float)parent.elementSize2);
                     ty = (int)(posBumperLeft.Y / (float)parent.elementSize2);
 
-                    if (((retrievedColor[0].A > 254) && (retrievedColor[0].G > 128)) || (tabLBM[tx, ty].isWall))
+                    if (((retrievedColor.A > 254) && (retrievedColor.G > 128)) || (tabLBM[tx, ty].isWall))
                     {
                         intersectsSmth = true;
                         userAcc = -1;
                     }
-                    sourceRectangle = new Rectangle((int)posBumperRight.X, (int)posBumperRight.Y, 1, 1);
-                    parent.mapLogicTexture.GetData<Color>(0, sourceRectangle, retrievedColor, 0, 1);
+                    retrievedColor = parent.GetColorFromLogicMapAtPoint((int)posBumperRight.X, (int)posBumperRight.Y);
 
                     tx = (int)(posBumperRight.X / (float)parent.elementSize2);
                     ty = (int)(posBumperRight.Y / (float)parent.elementSize2);
 
-                    if (((retrievedColor[0].A > 254) && (retrievedColor[0].G > 128)) || (tabLBM[tx, ty].isWall))
+                    if (((retrievedColor.A > 254) && (retrievedColor.G > 128)) || (tabLBM[tx, ty].isWall))
                     {
                         intersectsSmth = true;
                         userAcc = -1;
@@ -444,7 +447,7 @@ namespace TrafficSym2D
                 else //literowanie przez auta i jesli jest w ktoryms...
                 {
                     foreach (Car car in parent.cars)
-                        if ((car.position - this.position).Length() <= (2 * sprite.Height))
+                        if ((car.position - this.position).Length() <= (2 * spriteHeight))
                         {
                             if (IntersectsOtherCarWithBack(car))
                             {
@@ -465,7 +468,7 @@ namespace TrafficSym2D
             bool laneDone = false;
 
             //jedziemy od zew krancow
-            for (float i = 1f; i <= (scale * sprite.Width * 0.55f); i += 2f)
+            for (float i = 1f; i <= (scale * spriteWidth * 0.55f); i += 2f)
             {
                 if (laneDone) break;
                 Color c = parent.GetColorFromLogicMapAtPoint(framePointF + (leftSeeker * i));
@@ -491,8 +494,8 @@ namespace TrafficSym2D
             if (velocity < 4f) //distance przy jakim bedzie zwalniac to max 8px
             {
                 float frontDetector = dist * pixelToMeterRatio + parent.elementSize2 + 1f;
-                Vector2 frontBumperL = framePointF + frontDetector * frontSeeker + (leftSeeker * (scale * sprite.Width * 0.55f + dist * 3f));
-                Vector2 frontBumperR = framePointF + frontDetector * frontSeeker - (leftSeeker * (scale * sprite.Width * 0.55f + dist * 3f));
+                Vector2 frontBumperL = framePointF + frontDetector * frontSeeker + (leftSeeker * (scale * spriteWidth * 0.55f + dist * 3f));
+                Vector2 frontBumperR = framePointF + frontDetector * frontSeeker - (leftSeeker * (scale * spriteWidth * 0.55f + dist * 3f));
 
                 bool frontBumterLintersects = false;
                 bool frontBumterRintersects = false;
@@ -500,7 +503,7 @@ namespace TrafficSym2D
                 foreach (Car car in parent.cars)
                 {
                     if (frontBumterLintersects && frontBumterRintersects) break;
-                    if (!car.Equals(this) && ((car.position - this.position).Length() <= (2 * sprite.Height)))
+                    if (!car.Equals(this) && ((car.position - this.position).Length() <= (2 * spriteHeight)))
                     {
                         if (OrientationHelper.Intersection(frontBumperL, position, car.framePointRL, car.framePointRR)
                             || OrientationHelper.Intersection(frontBumperL, position, car.framePointRL, car.framePointFL)
@@ -543,7 +546,7 @@ namespace TrafficSym2D
             #region skrecanie - by nie wjechac w inne auta
             foreach (Car car in parent.cars)
             {
-                if (!car.Equals(this) && ((car.position - this.position).Length() <= (2 * sprite.Height)))
+                if (!car.Equals(this) && ((car.position - this.position).Length() <= (2 * spriteHeight)))
                 {
                     Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
                     //specialnie poszerzony przedni zderzak by najpierw odbil a potem hamowal
@@ -551,17 +554,17 @@ namespace TrafficSym2D
                     {
                         if (i == 1)
                         {
-                            posBumperLeft.X = framePointF.X + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.9f);
-                            posBumperLeft.Y = framePointF.Y + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.9f);
-                            posBumperRight.X = framePointF.X + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * sprite.Width * 0.9f);
-                            posBumperRight.Y = framePointF.Y + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * sprite.Width * 0.9f);
+                            posBumperLeft.X = framePointF.X + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.9f);
+                            posBumperLeft.Y = framePointF.Y + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.9f);
+                            posBumperRight.X = framePointF.X + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.9f);
+                            posBumperRight.Y = framePointF.Y + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.9f);
                         }
                         else
                         {
-                            posBumperLeft.X = framePointF.X + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.9f) - (frontSeeker.X * sprite.Height * scale * 0.25f);
-                            posBumperLeft.Y = framePointF.Y + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.9f) - (frontSeeker.Y * sprite.Height * scale * 0.25f);
-                            posBumperRight.X = framePointF.X + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * sprite.Width * 0.9f) - (frontSeeker.X * sprite.Height * scale * 0.25f);
-                            posBumperRight.Y = framePointF.Y + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * sprite.Width * 0.9f) - (frontSeeker.Y * sprite.Height * scale * 0.25f);
+                            posBumperLeft.X = framePointF.X + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.9f) - (frontSeeker.X * spriteHeight * scale * 0.25f);
+                            posBumperLeft.Y = framePointF.Y + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.9f) - (frontSeeker.Y * spriteHeight * scale * 0.25f);
+                            posBumperRight.X = framePointF.X + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.9f) - (frontSeeker.X * spriteHeight * scale * 0.25f);
+                            posBumperRight.Y = framePointF.Y + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.9f) - (frontSeeker.Y * spriteHeight * scale * 0.25f);
                         }
 
                         //sprawdzanie czy punkt sprawdzajacy jest wewnatrz ramek auta
@@ -590,10 +593,10 @@ namespace TrafficSym2D
             #region skrecanie - nie wjezdzanie na chodnik
             {
                 Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
-                posBumperLeft.X = position.X + ((float)Math.Cos(rotation) * scale * sprite.Height) + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.75f);
-                posBumperLeft.Y = position.Y + ((float)Math.Sin(rotation) * scale * sprite.Height) + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.75f);
-                posBumperRight.X = position.X + ((float)Math.Cos(rotation) * scale * sprite.Height) + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * sprite.Width * 0.75f);
-                posBumperRight.Y = position.Y + ((float)Math.Sin(rotation) * scale * sprite.Height) + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * sprite.Width * 0.75f);
+                posBumperLeft.X = position.X + ((float)Math.Cos(rotation) * scale * spriteHeight) + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
+                posBumperLeft.Y = position.Y + ((float)Math.Sin(rotation) * scale * spriteHeight) + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
+                posBumperRight.X = position.X + ((float)Math.Cos(rotation) * scale * spriteHeight) + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
+                posBumperRight.Y = position.Y + ((float)Math.Sin(rotation) * scale * spriteHeight) + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
 
                 if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(posBumperRight)))
                     userSteer = -1;
@@ -606,10 +609,10 @@ namespace TrafficSym2D
             {
                 Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
                 //jak najezdza przednim zderzakiem na sciane to zeby odpowiednio skrecil by dalej nie najezdzac
-                posBumperLeft = framePointFL + (leftSeeker * scale * sprite.Width * 0.25f);
-                posBumperRight = framePointFR - (leftSeeker * scale * sprite.Width * 0.25f);
-                Vector2 posBumperLeft2 = posBumperLeft - frontSeeker * scale * sprite.Width * 0.50f;
-                Vector2 posBumperRight2 = posBumperRight - frontSeeker * scale * sprite.Width * 0.50f;
+                posBumperLeft = framePointFL + (leftSeeker * scale * spriteWidth * 0.25f);
+                posBumperRight = framePointFR - (leftSeeker * scale * spriteWidth * 0.25f);
+                Vector2 posBumperLeft2 = posBumperLeft - frontSeeker * scale * spriteWidth * 0.50f;
+                Vector2 posBumperRight2 = posBumperRight - frontSeeker * scale * spriteWidth * 0.50f;
 
                 if (
                     ((posBumperLeft.X / parent.elementSize2) < parent.countNotStaticX - 1) &&
@@ -646,6 +649,7 @@ namespace TrafficSym2D
 
             }
             #endregion
+
 
             //jak jedzie do tylu to zeby skrecil na odwrot...
             if (velocity < 0)
@@ -730,12 +734,12 @@ namespace TrafficSym2D
 
             //zmienne pomocnicze by nie liczyc wszystkiego pare razy...
             Vector2 front = new Vector2(), rear = new Vector2(), left = new Vector2();
-            front.X = ((float)Math.Cos(rotation) * scale * sprite.Height * 0.75f);
-            front.Y = ((float)Math.Sin(rotation) * scale * sprite.Height * 0.75f);
-            rear.X = ((float)Math.Cos(rotation) * scale * sprite.Height * 0.25f);
-            rear.Y = ((float)Math.Sin(rotation) * scale * sprite.Height * 0.25f);
-            left.X = ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.5f);
-            left.Y = ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * sprite.Width * 0.5f);
+            front.X = ((float)Math.Cos(rotation) * scale * spriteHeight * 0.75f);
+            front.Y = ((float)Math.Sin(rotation) * scale * spriteHeight * 0.75f);
+            rear.X = ((float)Math.Cos(rotation) * scale * spriteHeight * 0.25f);
+            rear.Y = ((float)Math.Sin(rotation) * scale * spriteHeight * 0.25f);
+            left.X = ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.5f);
+            left.Y = ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.5f);
 
             //lewy rog przedniego zderzaka: pozycja + dlugosc + pol szerokosci auta w lewo wzg osi
             framePointFL = GeneralHelper.NormalizeVector(position + front + left);
