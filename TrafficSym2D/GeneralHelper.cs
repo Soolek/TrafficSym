@@ -11,10 +11,10 @@ namespace TrafficSym2D
         public static TrafficSymGame parent;
         public static Vector2 NormalizeVector(Vector2 vec)
         {
-            if (vec.X < parent.elementSize2) vec.X = parent.elementSize2;
-            if (vec.Y < parent.elementSize2) vec.Y = parent.elementSize2;
-            if (vec.X > parent.resNotStaticX - parent.elementSize2) vec.X = parent.resNotStaticX - parent.elementSize2;
-            if (vec.Y > parent.resNotStaticY - parent.elementSize2) vec.Y = parent.resNotStaticY - parent.elementSize2;
+            if (vec.X < parent.elementSize) vec.X = parent.elementSize;
+            if (vec.Y < parent.elementSize) vec.Y = parent.elementSize;
+            if (vec.X > parent.resX - parent.elementSize) vec.X = parent.resX - parent.elementSize;
+            if (vec.Y > parent.resY - parent.elementSize) vec.Y = parent.resY - parent.elementSize;
 
             return vec;
         }

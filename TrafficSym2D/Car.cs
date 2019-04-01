@@ -146,23 +146,23 @@ namespace TrafficSym2D
             //czyli jechanie po wektorach z gazu do celu + uwazanie na miejsca w ktorych tych wskazowek niema
 
             //wyciaganie kierunku jazdy z gazu
-            int tx = (int)(position.X / (float)parent.elementSize2);
-            int ty = (int)(position.Y / (float)parent.elementSize2);
+            int tx = (int)(position.X / (float)parent.elementSize);
+            int ty = (int)(position.Y / (float)parent.elementSize);
             //Vector2 posBumperFrontTemp = new Vector2();
             //float disttemp = velocity * velocity / force_braking;
             //if (velocity < 0)
             //    if (disttemp > 1f) disttemp = 1f;
             //disttemp /= (1f + aggressiveness / 2f);
-            //float dist2temp = (disttemp * pixelToMeterRatio) + parent.elementSize2;
+            //float dist2temp = (disttemp * pixelToMeterRatio) + parent.elementSize;
             //posBumperFrontTemp.X = framePointF.X + ((float)Math.Cos(rotation) * dist2temp);
             //posBumperFrontTemp.Y = framePointF.Y + ((float)Math.Sin(rotation) * dist2temp);
 
-            //int tx = (int)(posBumperFrontTemp.X / (float)parent.elementSize2);
-            //int ty = (int)(posBumperFrontTemp.Y / (float)parent.elementSize2);
+            //int tx = (int)(posBumperFrontTemp.X / (float)parent.elementSize);
+            //int ty = (int)(posBumperFrontTemp.Y / (float)parent.elementSize);
             float vx, vy;//przechowuja kierunek
 
             //jako sugestie kierunku bierzemy pole na ktorym auto jest z waga *4 + cztery okoliczne pola
-            if ((tx < (parent.countNotStaticX - 1)) && (ty < (parent.countNotStaticY - 1)))
+            if ((tx < (parent.countX - 1)) && (ty < (parent.countY - 1)))
             {
                 vx = tabLBM[tx, ty].x * 4f; vy = tabLBM[tx, ty].y * 4f;
                 vx += tabLBM[tx + 1, ty].x; vy += tabLBM[tx + 1, ty].y;
@@ -237,7 +237,7 @@ namespace TrafficSym2D
 
             #region inni uczestnicy ruchu
             {
-                float dist2 = (dist * pixelToMeterRatio) + parent.elementSize2;
+                float dist2 = (dist * pixelToMeterRatio) + parent.elementSize;
 
                 Vector2 posBumperLeftCar = new Vector2();//do wykrywania innych aut
                 Vector2 posBumperRightCar = new Vector2();
@@ -326,7 +326,7 @@ namespace TrafficSym2D
             #endregion
 
             //parametrem bedzie userAcc czy == -1
-            for (int i = (int)(dist * pixelToMeterRatio) + parent.elementSize2; i >= 0; i -= parent.elementSize2)
+            for (int i = (int)(dist * pixelToMeterRatio) + parent.elementSize; i >= 0; i -= parent.elementSize)
             {
                 if (userAcc == -1) break;
                 Vector2 posBumperLeft = new Vector2();
@@ -350,8 +350,8 @@ namespace TrafficSym2D
                 {
                     Color retrievedColor = parent.GetColorFromLogicMapAtPoint((int)posBumperLeft.X, (int)posBumperLeft.Y);
 
-                    tx = (int)(posBumperLeft.X / (float)parent.elementSize2);
-                    ty = (int)(posBumperLeft.Y / (float)parent.elementSize2);
+                    tx = (int)(posBumperLeft.X / (float)parent.elementSize);
+                    ty = (int)(posBumperLeft.Y / (float)parent.elementSize);
 
                     if (((retrievedColor.A > 254) && (retrievedColor.G > 128)) || (tabLBM[tx, ty].isWall))
                     {
@@ -360,8 +360,8 @@ namespace TrafficSym2D
                     }
                     retrievedColor = parent.GetColorFromLogicMapAtPoint((int)posBumperRight.X, (int)posBumperRight.Y);
 
-                    tx = (int)(posBumperRight.X / (float)parent.elementSize2);
-                    ty = (int)(posBumperRight.Y / (float)parent.elementSize2);
+                    tx = (int)(posBumperRight.X / (float)parent.elementSize);
+                    ty = (int)(posBumperRight.Y / (float)parent.elementSize);
 
                     if (((retrievedColor.A > 254) && (retrievedColor.G > 128)) || (tabLBM[tx, ty].isWall))
                     {
@@ -374,15 +374,15 @@ namespace TrafficSym2D
                 #region sciany ze swiatlami
                 if ((aggressiveness < 0.9) && (velocity >= -0.1f))
                 {
-                    if (parent.lightTabLBM[(int)posBumperLeft.X / parent.elementSize2, (int)posBumperLeft.Y / parent.elementSize2].isWall)
+                    if (parent.lightTabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
                         userAcc = -1;
-                    else if (parent.lightTabLBM[(int)posBumperRight.X / parent.elementSize2, (int)posBumperRight.Y / parent.elementSize2].isWall)
+                    else if (parent.lightTabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
                         userAcc = -1;
-                    else if (parent.lightTabLBM[(int)framePointF.X / parent.elementSize2, (int)framePointF.Y / parent.elementSize2].isWall)
+                    else if (parent.lightTabLBM[(int)framePointF.X / parent.elementSize, (int)framePointF.Y / parent.elementSize].isWall)
                         userAcc = -1;
-                    else if (parent.lightTabLBM[(int)framePointFL.X / parent.elementSize2, (int)framePointFL.Y / parent.elementSize2].isWall)
+                    else if (parent.lightTabLBM[(int)framePointFL.X / parent.elementSize, (int)framePointFL.Y / parent.elementSize].isWall)
                         userAcc = -1;
-                    else if (parent.lightTabLBM[(int)framePointFR.X / parent.elementSize2, (int)framePointFR.Y / parent.elementSize2].isWall)
+                    else if (parent.lightTabLBM[(int)framePointFR.X / parent.elementSize, (int)framePointFR.Y / parent.elementSize].isWall)
                         userAcc = -1;
                 }
                 #endregion
@@ -417,7 +417,7 @@ namespace TrafficSym2D
             #region turning to overtake slow cars
             if (velocity < 4f)
             {
-                float frontDetector = dist * pixelToMeterRatio + parent.elementSize2 + 1f;
+                float frontDetector = dist * pixelToMeterRatio + parent.elementSize + 1f;
                 Vector2 frontBumperL = framePointF + frontDetector * frontSeeker + (leftSeeker * (scale * spriteWidth * 0.55f + dist * 3f));
                 Vector2 frontBumperR = framePointF + frontDetector * frontSeeker - (leftSeeker * (scale * spriteWidth * 0.55f + dist * 3f));
 
@@ -535,36 +535,36 @@ namespace TrafficSym2D
                 Vector2 posBumperRight2 = posBumperRight - frontSeeker * scale * spriteWidth * 0.50f;
 
                 if (
-                    ((posBumperLeft.X / parent.elementSize2) < parent.countNotStaticX - 1) &&
-                    (posBumperLeft.X > parent.elementSize2) &&
-                    ((posBumperRight.X / parent.elementSize2) < parent.countNotStaticX - 1) &&
-                    (posBumperRight.X > parent.elementSize2) &&
-                    ((posBumperLeft.Y / parent.elementSize2) < parent.countNotStaticY - 1) &&
-                    (posBumperLeft.Y > parent.elementSize2) &&
-                    ((posBumperRight.Y / parent.elementSize2) < parent.countNotStaticY - 1) &&
-                    (posBumperRight.Y > parent.elementSize2)
+                    ((posBumperLeft.X / parent.elementSize) < parent.countX - 1) &&
+                    (posBumperLeft.X > parent.elementSize) &&
+                    ((posBumperRight.X / parent.elementSize) < parent.countX - 1) &&
+                    (posBumperRight.X > parent.elementSize) &&
+                    ((posBumperLeft.Y / parent.elementSize) < parent.countY - 1) &&
+                    (posBumperLeft.Y > parent.elementSize) &&
+                    ((posBumperRight.Y / parent.elementSize) < parent.countY - 1) &&
+                    (posBumperRight.Y > parent.elementSize)
                 )
                 {
-                    if (tabLBM[(int)posBumperLeft.X / parent.elementSize2, (int)posBumperLeft.Y / parent.elementSize2].isWall)
+                    if (tabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
                         userSteer = 1;//by odbil w prawo
-                    else if (tabLBM[(int)posBumperRight.X / parent.elementSize2, (int)posBumperRight.Y / parent.elementSize2].isWall)
+                    else if (tabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
                         userSteer = -1;//by odbil w lewo
                 }
 
                 posBumperLeft = posBumperLeft2; posBumperRight = posBumperRight2;
                 if (
-                   ((posBumperLeft.X / parent.elementSize2) < parent.countNotStaticX - 1) &&
-                   (posBumperLeft.X > parent.elementSize2) &&
-                   ((posBumperRight.X / parent.elementSize2) < parent.countNotStaticX - 1) &&
-                   (posBumperRight.X > parent.elementSize2) &&
-                   ((posBumperLeft.Y / parent.elementSize2) < parent.countNotStaticY - 1) &&
-                   (posBumperLeft.Y > parent.elementSize2) &&
-                   ((posBumperRight.Y / parent.elementSize2) < parent.countNotStaticY - 1) &&
-                   (posBumperRight.Y > parent.elementSize2)
+                   ((posBumperLeft.X / parent.elementSize) < parent.countX - 1) &&
+                   (posBumperLeft.X > parent.elementSize) &&
+                   ((posBumperRight.X / parent.elementSize) < parent.countX - 1) &&
+                   (posBumperRight.X > parent.elementSize) &&
+                   ((posBumperLeft.Y / parent.elementSize) < parent.countY - 1) &&
+                   (posBumperLeft.Y > parent.elementSize) &&
+                   ((posBumperRight.Y / parent.elementSize) < parent.countY - 1) &&
+                   (posBumperRight.Y > parent.elementSize)
                )
-                    if (tabLBM[(int)posBumperLeft.X / parent.elementSize2, (int)posBumperLeft.Y / parent.elementSize2].isWall)
+                    if (tabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
                         userSteer = 1;//by odbil w prawo
-                    else if (tabLBM[(int)posBumperRight.X / parent.elementSize2, (int)posBumperRight.Y / parent.elementSize2].isWall)
+                    else if (tabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
                         userSteer = -1;//by odbil w lewo
 
             }

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <TrafficSym2D>
   <routeConfigs>
-    <config id="0" timeBetweenCarsMs="5000" comment="rightIn+upEnd">
+    <config id="0" timeBetweenCarsMs="5000" comment="rightIn+upEnd" speed="5">
       <start x1="1017" y1="91" x2="1017" y2="106" direction="180"/>
       <end  x1="637" y1="6" x2="622" y2="6"/>
       <wall  x1="1017" y1="116" x2="897" y2="116"/>

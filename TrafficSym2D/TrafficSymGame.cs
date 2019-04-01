@@ -33,21 +33,16 @@ namespace TrafficSym2D
     /// </summary>
     public class TrafficSymGame : Game
     {
-        const int resX = 1024;
-        const int resY = 768;
-        public int resNotStaticX = resX;
-        public int resNotStaticY = resY;
+        public int resX = 0;
+        public int resY = 0;
 
         private int mapsLoadedState = 0;
 
-        public static int elementSize = 5; //Lattice grid size
-        public int elementSize2 = elementSize;
+        public int elementSize = 5; //Lattice grid size
         public static float vectorLength = 5f;
 
-        public static int countX = (resX / elementSize) + 1;
-        public static int countY = (resY / elementSize) + 1;
-        public int countNotStaticX = countX;
-        public int countNotStaticY = countY;
+        public int countX = 0;
+        public int countY = 0;
 
         public static float FLOW_MAX = 0.05f;
         public static float COEF = 0.24f;
@@ -62,35 +57,34 @@ namespace TrafficSym2D
 
         private TabLBMSerializer _tabLBMSerializer;
 
-        //grafika
+        //XNA graphics
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         //font
         public SpriteFont defaultFont;
 
-        //mapa
-        public Texture2D mapLogicTexture;
+        //map
+        public Texture2D mapTexture;
         Rectangle viewportRect;
 
-        //xml z danymi poczatkowymi itd
-        XmlDocument xdoc;
+        //route configs
+        List<RouteConfig> routeConfigList;
 
-        //obiekt przechowujacy dane do sciezek
-        List<RouteConfig> routeConfigList = new List<RouteConfig>();
+        //lights configs
+        List<RouteWall> lightList;
+        List<LightConfig> lightConfigList;
 
-        //lista przechowujaca dane do swiatel
-        List<RouteWall> lightList = new List<RouteWall>();
-        List<LightConfig> lightConfigList = new List<LightConfig>();
-
-        //auta
+        //cars
         public static int carSpritesCount = 4;
         public List<Car> cars = new List<Car>();
         public Car selectedCar;
         private int currentCarCount = 0;
         private long finishedCarCount = 0;
 
-        //implementacja LBM
+        //LBM implementation
+        float[,] fx;
+        float[,] fy;
         public LBMElement[,] lightTabLBM; //dodatkowe sciany do swiatel
         LBMElement[][,] tabLBM;
         private int _currentTabLBMIndex = 0;
@@ -108,7 +102,7 @@ namespace TrafficSym2D
             }
         }
 
-        //do wyswietlania grafiki
+        //graphics drawing
         public Texture2D texBrake;
         public Texture2D texAcc;
         public Texture2D texSteer;
@@ -118,10 +112,10 @@ namespace TrafficSym2D
 
         public TrafficSymGame(Dictionary<string, string> arguments)
         {
+            Content.RootDirectory = "Content";
             Config.SetParameters(arguments);
 
             graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
@@ -129,141 +123,41 @@ namespace TrafficSym2D
             _tabLBMSerializer = new TabLBMSerializer(Path.Combine("Configs", Config.ConfigDir));
             LGAHelper.parent = this;
             GeneralHelper.parent = this;
+
+            mapTexture = LoadMap(Path.Combine("Configs", Config.ConfigDir, "map.tga"));
+            SetVariablesBasedOnMap(mapTexture);
+            
             graphics.PreferredBackBufferWidth = resX;
             graphics.PreferredBackBufferHeight = resY;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
+
             base.Initialize();
         }
 
-        protected void LoadDataFromXML(string xmlFilePath)
+        private void SetVariablesBasedOnMap(Texture2D mapTexture)
         {
-            xdoc = new XmlDocument();
-            if (File.Exists(xmlFilePath))
+            resX = mapTexture.Width;
+            resY = mapTexture.Height;
+            countX = (resX / elementSize) + 1;
+            countY = (resY / elementSize) + 1;
+            fx = new float[countX, countY];
+            fy = new float[countX, countY];
+        }
+
+        private Texture2D LoadMap(string mapPath)
+        {
+            if (File.Exists(mapPath))
             {
-                xdoc.Load(xmlFilePath);
+                FileStream fs = File.Open(mapPath, FileMode.Open);
+                var mapTexture = Texture2D.FromStream(GraphicsDevice, fs);
+                fs.Close();
+
+                return mapTexture;
             }
             else
             {
-                throw new IOException(string.Format("Missing settings file: {0}", xmlFilePath));
-            }
-
-            #region ladowanie routeConfigs
-            XmlElement xmlConfig = xdoc["TrafficSym2D"]["routeConfigs"];
-            for (int i = 0; i < xmlConfig.ChildNodes.Count; i++)
-            {
-                XmlNode xmlNodeMain = xmlConfig.ChildNodes.Item(i);
-                RouteConfig routeConfig = new RouteConfig();
-                routeConfig.timeBetweenCarsMs = Convert.ToInt32(xmlNodeMain.Attributes["timeBetweenCarsMs"].Value);
-
-                for (int i2 = 0; i2 < xmlNodeMain.ChildNodes.Count; i2++)
-                {
-                    XmlNode xmlNode = xmlNodeMain.ChildNodes.Item(i2);
-
-                    int x1 = Convert.ToInt32(xmlNode.Attributes["x1"].Value);
-                    int y1 = Convert.ToInt32(xmlNode.Attributes["y1"].Value);
-                    int x2 = Convert.ToInt32(xmlNode.Attributes["x2"].Value);
-                    int y2 = Convert.ToInt32(xmlNode.Attributes["y2"].Value);
-
-                    if (xmlNode.Name.Equals("start") || xmlNode.Name.Equals("end"))
-                    {
-                        int temp;
-                        if (x1 > x2)
-                        {
-                            temp = x1;
-                            x1 = x2;
-                            x2 = temp;
-                        }
-                        if (y1 > y2)
-                        {
-                            temp = y1;
-                            y1 = y2;
-                            y2 = temp;
-                        }
-                    }
-
-                    if (x1 > (resX - elementSize)) x1 = (resX - elementSize);
-                    if (x2 > (resX - elementSize)) x2 = (resX - elementSize);
-                    if (y1 > (resY - elementSize)) y1 = (resY - elementSize);
-                    if (y2 > (resY - elementSize)) y2 = (resY - elementSize);
-                    if (x1 < elementSize) x1 = elementSize;
-                    if (x2 < elementSize) x2 = elementSize;
-                    if (y1 < elementSize) y1 = elementSize;
-                    if (y2 < elementSize) y2 = elementSize;
-
-                    switch (xmlNode.Name)
-                    {
-                        case "start":
-                            {
-                                routeConfig.routeStart.Add(new RouteStart(
-                                    x1, y1, x2, y2,
-                                    (float)Convert.ToInt32(xmlNode.Attributes["direction"].Value)
-                                    ));
-                            }; break;
-
-                        case "end":
-                            {
-                                routeConfig.routeEnd.Add(new RouteEnd(
-                                    x1, y1, x2, y2
-                                    ));
-                            }; break;
-
-                        case "wall":
-                            {
-                                routeConfig.routeWall.Add(new RouteWall(
-                                    x1, y1, x2, y2
-                                    ));
-                            }; break;
-                    }
-                }
-                routeConfigList.Add(routeConfig);
-            }
-            #endregion
-
-            if (xdoc["TrafficSym2D"]["lightConfig"] != null)
-            {
-                #region ladowanie lightConfig.lights
-                xmlConfig = xdoc["TrafficSym2D"]["lightConfig"]["lights"];
-                if (xmlConfig != null)
-                    for (int i = 0; i < xmlConfig.ChildNodes.Count; i++)
-                    {
-                        XmlNode xmlNode = xmlConfig.ChildNodes.Item(i);
-                        int x1 = Convert.ToInt32(xmlNode.Attributes["x1"].Value);
-                        int y1 = Convert.ToInt32(xmlNode.Attributes["y1"].Value);
-                        int x2 = Convert.ToInt32(xmlNode.Attributes["x2"].Value);
-                        int y2 = Convert.ToInt32(xmlNode.Attributes["y2"].Value);
-
-                        if (x1 > (resX - elementSize)) x1 = (resX - elementSize);
-                        if (x2 > (resX - elementSize)) x2 = (resX - elementSize);
-                        if (y1 > (resY - elementSize)) y1 = (resY - elementSize);
-                        if (y2 > (resY - elementSize)) y2 = (resY - elementSize);
-                        if (x1 < elementSize) x1 = elementSize;
-                        if (x2 < elementSize) x2 = elementSize;
-                        if (y1 < elementSize) y1 = elementSize;
-                        if (y2 < elementSize) y2 = elementSize;
-
-                        lightList.Add(new RouteWall(x1, y1, x2, y2));
-                    }
-                #endregion
-
-                #region ladowanie lightConfig.configs
-                xmlConfig = xdoc["TrafficSym2D"]["lightConfig"]["configs"];
-                if (xmlConfig != null)
-                    for (int i = 0; i < xmlConfig.ChildNodes.Count; i++)
-                    {
-                        XmlNode xmlNodeMain = xmlConfig.ChildNodes.Item(i);
-                        LightConfig lc = new LightConfig();
-                        lc.timeToWaitMs = Convert.ToInt32(xmlNodeMain.Attributes["timeToWaitMs"].Value);
-                        lc.comment = xmlNodeMain.Attributes["comment"].Value;
-
-                        for (int i2 = 0; i2 < xmlNodeMain.ChildNodes.Count; i2++)
-                        {
-                            XmlNode xmlNode = xmlNodeMain.ChildNodes.Item(i2);
-                            lc.lightId.Add(Convert.ToInt32(xmlNode.Attributes["id"].Value));
-                        }
-                        lightConfigList.Add(lc);
-                    }
-                #endregion
+                throw new IOException(string.Format("Missing map file: {0}", mapPath));
             }
         }
 
@@ -273,36 +167,24 @@ namespace TrafficSym2D
             this.IsMouseVisible = true;
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            //
             viewportRect = new Rectangle(0, 0, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height);
-
-            //map
-            var filePath = Path.Combine("Configs", Config.ConfigDir, "map.tga");
-            if (File.Exists(filePath))
-            {
-                FileStream fs = File.Open(filePath, FileMode.Open);
-                mapLogicTexture = Texture2D.FromStream(GraphicsDevice, fs);
-                fs.Close();
-            }
-            else
-            {
-                throw new IOException(string.Format("Missing map file: {0}", filePath));
-            }
 
             //font
             defaultFont = Content.Load<SpriteFont>("arial12");
 
-            //dodatki do auta
+            //car textures
             texAcc = Content.Load<Texture2D>("car_gadgets\\acc");
             texBrake = Content.Load<Texture2D>("car_gadgets\\brake");
             texSteer = Content.Load<Texture2D>("car_gadgets\\steer");
 
-            //wyswietlanie gazu
+            //LBM textures
             texWall = Content.Load<Texture2D>("gas\\wall");
 
-            //ladowanie z xml
-            LoadDataFromXML(Path.Combine("Configs", Config.ConfigDir, "settings.xml"));
+            //config load
+            var xmlSettings = XmlSettings.CreateFromFile(Path.Combine("Configs", Config.ConfigDir, "settings.xml"), this);
+            this.routeConfigList = xmlSettings.RouteConfigList;
+            this.lightList = xmlSettings.LightList;
+            this.lightConfigList = xmlSettings.LightConfigList;
 
             //inicjacja tabLBM
             lightTabLBM = new LBMElement[countX, countY];
@@ -312,7 +194,7 @@ namespace TrafficSym2D
 
             //getting all color data beforehand
             _colorMap = new Color[resX * resY];
-            mapLogicTexture.GetData<Color>(0, new Rectangle(0, 0, resX, resY), _colorMap, 0, resX * resY);
+            mapTexture.GetData<Color>(0, new Rectangle(0, 0, resX, resY), _colorMap, 0, resX * resY);
 
             //okreslanie tabLogicMap + instancjonowanie tabeli elementow
             for (int x = 0; x < countX; x++)
@@ -367,8 +249,6 @@ namespace TrafficSym2D
         {
         }
 
-        float[,] fx = new float[countX, countY];
-        float[,] fy = new float[countX, countY];
         TimeSpan lightLastChangeTime = new TimeSpan(0);
         int lightConfigId = -1;
 
@@ -586,7 +466,7 @@ namespace TrafficSym2D
             {
                 mapsLoadedState++;
 
-                spriteBatch.DrawString(defaultFont, "Loading maps...", new Vector2(10, (float)(resNotStaticY / 2.0)), Color.White);
+                spriteBatch.DrawString(defaultFont, "Loading maps...", new Vector2(10, (float)(resY / 2.0)), Color.White);
 
                 base.Draw(gameTime);
                 spriteBatch.End();
@@ -606,7 +486,7 @@ namespace TrafficSym2D
             }
 
             //logic map?
-            spriteBatch.Draw(mapLogicTexture, viewportRect, Color.White);
+            spriteBatch.Draw(mapTexture, viewportRect, Color.White);
 
             //LGA
             if (gameState == GameState.SimulateLBM)
