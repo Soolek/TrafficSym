@@ -391,25 +391,23 @@ namespace TrafficSym2D
             #endregion
 
             #region turning to avoid crossing lane markings - correction after vector map base
-            bool laneDone = false;
-
-            //jedziemy od zew krancow
-            for (float i = 1f; i <= (scale * spriteWidth * 0.55f); i += 2f)
+            //starting from center of front bumper, seek lane marking outwards
+            var maxSeekWidth = (scale * spriteWidth * 0.55f);
+            for (float i = 1f; i <= maxSeekWidth; i += 1f)
             {
-                if (laneDone) break;
                 Color c = parent.GetColorFromLogicMapAtPoint(framePointF + (leftSeeker * i));
                 if (c.A > 254 && c.B > 128)
                 {
-                    userSteer += 0.5f;
-                    laneDone = true;
+                    userSteer = 0.75f * (maxSeekWidth-i) / maxSeekWidth;
+                    break;
                 }
                 else
                 {
                     c = parent.GetColorFromLogicMapAtPoint(framePointF - (leftSeeker * i));
                     if (c.A > 254 && c.B > 128)
                     {
-                        userSteer -= -0.5f;
-                        laneDone = true;
+                        userSteer = -0.75f * (maxSeekWidth - i) / maxSeekWidth;
+                        break;
                     }
                 }
             }

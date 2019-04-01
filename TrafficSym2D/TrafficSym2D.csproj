@@ -42,6 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Car.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Enums\GameState.cs" />
     <Compile Include="TrafficSymGame.cs" />
     <Compile Include="GeneralHelper.cs" />
@@ -66,13 +67,16 @@
     <Content Include="Content\gas\wall.bmp" />
     <Content Include="Content\maps\map_b.bmp" />
     <Content Include="Icon.ico" />
-    <Content Include="settings.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="Configs\Default\settings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
+    <None Include="Configs\Default\map.tga">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Content\arial12.spritefont" />
     <None Include="Content\cars\car1.tga" />
     <None Include="Content\cars\car2.tga" />
@@ -86,6 +90,7 @@
     <None Include="Content\car_gadgets\steer.tga" />
     <None Include="Content\maps\map_l.tga" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

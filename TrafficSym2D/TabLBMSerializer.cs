@@ -8,47 +8,49 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace TrafficSym2D
 {
-    public static class TabLBMSerializer
+    public class TabLBMSerializer
     {
-        public static TrafficSymGame parent;
+        private string _configDirPath;
 
-        public static void SaveTabLBM(LBMElement[,] tab, int index)
+        public TabLBMSerializer(string configDirPath)
+        {
+            this._configDirPath = configDirPath;
+        }
+        public void SaveTabLBM(LBMElement[,] tab, int index)
         {
             //save the car list to a file
             ObjectToSerialize objectToSerialize = new ObjectToSerialize();
             objectToSerialize.tabLBM = tab;
 
-            SerializeObject("tabLBM"+index.ToString()+".bin", objectToSerialize);
+            var lbmFileName = "tabLBM" + index.ToString() + ".bin";
+            var lbmFilePath = Path.Combine(_configDirPath, lbmFileName);
+            SerializeObject(lbmFilePath, objectToSerialize);
         }
 
-        public static LBMElement[,] LoadTabLBM(int index)
+        public LBMElement[,] LoadTabLBM(int index)
         {
-            if (File.Exists("tabLBM" + index.ToString() + ".bin"))
+            var lbmFileName = "tabLBM" + index.ToString() + ".bin";
+            var lbmFilePath = Path.Combine(_configDirPath, lbmFileName);
+            if (File.Exists(lbmFilePath))
             {
-                ObjectToSerialize objectToSerialize = DeSerializeObject("tabLBM" + index.ToString() + ".bin");
-                return objectToSerialize.tabLBM;
-            }
-            else if (File.Exists("..\\..\\..\\vector_maps\\tabLBM" + index.ToString() + ".bin"))
-            {
-                ObjectToSerialize objectToSerialize = DeSerializeObject("..\\..\\..\\vector_maps\\tabLBM" + index.ToString() + ".bin");
+                ObjectToSerialize objectToSerialize = DeSerializeObject(lbmFilePath);
                 return objectToSerialize.tabLBM;
             }
             return null;
         }
 
-
-        public static void SerializeObject(string filename, ObjectToSerialize objectToSerialize)
+        public void SerializeObject(string filePath, ObjectToSerialize objectToSerialize)
         {
-            Stream stream = File.Open(filename, FileMode.Create);
+            Stream stream = File.Open(filePath, FileMode.Create);
             BinaryFormatter bFormatter = new BinaryFormatter();
             bFormatter.Serialize(stream, objectToSerialize);
             stream.Close();
         }
 
-        public static ObjectToSerialize DeSerializeObject(string filename)
+        public ObjectToSerialize DeSerializeObject(string filePath)
         {
             ObjectToSerialize objectToSerialize;
-            Stream stream = File.Open(filename, FileMode.Open);
+            Stream stream = File.Open(filePath, FileMode.Open);
             BinaryFormatter bFormatter = new BinaryFormatter();
             objectToSerialize = (ObjectToSerialize)bFormatter.Deserialize(stream);
             stream.Close();

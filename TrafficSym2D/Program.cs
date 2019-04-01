@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace TrafficSym2D
 {
@@ -12,9 +13,13 @@ namespace TrafficSym2D
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
-            using (var game = new TrafficSymGame())
+            var parsedArgs = args
+                .Select(s => s.Split(new[] { ':' }, 1))
+                .ToDictionary(s => s[0].ToLower(), s => s[1].ToLower());
+
+            using (var game = new TrafficSymGame(parsedArgs))
                 game.Run();
         }
     }

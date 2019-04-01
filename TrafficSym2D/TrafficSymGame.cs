@@ -60,6 +60,8 @@ namespace TrafficSym2D
         public bool doLBM = false;
         public bool doAutomaticCars = true;
 
+        private TabLBMSerializer _tabLBMSerializer;
+
         //grafika
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -68,7 +70,6 @@ namespace TrafficSym2D
         public SpriteFont defaultFont;
 
         //mapa
-        Texture2D mapBackgroundTexture;
         public Texture2D mapLogicTexture;
         Rectangle viewportRect;
 
@@ -115,19 +116,19 @@ namespace TrafficSym2D
         public Texture2D texWall;
         public Texture2D texVector;
 
-        public TrafficSymGame()
+        public TrafficSymGame(Dictionary<string, string> arguments)
         {
+            Config.SetParameters(arguments);
+
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            //29fps
-            //TargetElapsedTime = new TimeSpan(0, 0, 0, 0, 34);
         }
 
         protected override void Initialize()
         {
+            _tabLBMSerializer = new TabLBMSerializer(Path.Combine("Configs", Config.ConfigDir));
             LGAHelper.parent = this;
             GeneralHelper.parent = this;
-            TabLBMSerializer.parent = this;
             graphics.PreferredBackBufferWidth = resX;
             graphics.PreferredBackBufferHeight = resY;
             graphics.IsFullScreen = false;
@@ -135,32 +136,19 @@ namespace TrafficSym2D
             base.Initialize();
         }
 
-        protected void LoadDataFromXML()
+        protected void LoadDataFromXML(string xmlFilePath)
         {
-            //ladowanie xml'a z danymi
             xdoc = new XmlDocument();
-            try
+            if (File.Exists(xmlFilePath))
             {
-                if (File.Exists("..\\..\\..\\settings.xml"))
-                    xdoc.Load("..\\..\\..\\settings.xml");
+                xdoc.Load(xmlFilePath);
             }
-            catch { }
-            try
+            else
             {
-                if (File.Exists("settings.xml"))
-                    xdoc.Load("settings.xml");
+                throw new IOException(string.Format("Missing settings file: {0}", xmlFilePath));
             }
-            catch { }
-
-            //XmlElement xmlConfig = xdoc["TrafficSym2D"]["routeConfigs"]["config"];
-            //x1 = Convert.ToInt32(xmlConfig["start"].Attributes["x1"].Value);
 
             #region ladowanie routeConfigs
-            if (xdoc["TrafficSym2D"] == null)
-            {
-                System.Windows.Forms.MessageBox.Show("settings.xml nie zaladowany!");
-                xdoc.LoadXml(GeneralHelper.settingsxml);
-            }
             XmlElement xmlConfig = xdoc["TrafficSym2D"]["routeConfigs"];
             for (int i = 0; i < xmlConfig.ChildNodes.Count; i++)
             {
@@ -289,27 +277,17 @@ namespace TrafficSym2D
             //
             viewportRect = new Rectangle(0, 0, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height);
 
-            //mapa
-            if (File.Exists("map_b.bmp"))
+            //map
+            var filePath = Path.Combine("Configs", Config.ConfigDir, "map.tga");
+            if (File.Exists(filePath))
             {
-                FileStream fs = File.Open("map_b.bmp", FileMode.Open);
-                mapBackgroundTexture = Texture2D.FromStream(GraphicsDevice, fs);
-                fs.Close();
-            }
-            else
-            {
-                mapBackgroundTexture = Content.Load<Texture2D>("maps\\map_b");
-            }
-
-            if (File.Exists("map_l.tga"))
-            {
-                FileStream fs = File.Open("map_l.tga", FileMode.Open);
+                FileStream fs = File.Open(filePath, FileMode.Open);
                 mapLogicTexture = Texture2D.FromStream(GraphicsDevice, fs);
                 fs.Close();
             }
             else
             {
-                mapLogicTexture = Content.Load<Texture2D>("maps\\map_l");
+                throw new IOException(string.Format("Missing map file: {0}", filePath));
             }
 
             //font
@@ -324,7 +302,7 @@ namespace TrafficSym2D
             texWall = Content.Load<Texture2D>("gas\\wall");
 
             //ladowanie z xml
-            LoadDataFromXML();
+            LoadDataFromXML(Path.Combine("Configs", Config.ConfigDir, "settings.xml"));
 
             //inicjacja tabLBM
             lightTabLBM = new LBMElement[countX, countY];
@@ -617,7 +595,7 @@ namespace TrafficSym2D
                 {
                     for (int i = 0; i < routeConfigList.Count; i++)
                     {
-                        LBMElement[,] temp = TabLBMSerializer.LoadTabLBM(i);
+                        LBMElement[,] temp = _tabLBMSerializer.LoadTabLBM(i);
                         if (temp != null) tabLBM[i] = temp;
                     }
                 }
@@ -627,8 +605,6 @@ namespace TrafficSym2D
                 return;
             }
 
-            //background
-            spriteBatch.Draw(mapBackgroundTexture, viewportRect, Color.White);
             //logic map?
             spriteBatch.Draw(mapLogicTexture, viewportRect, Color.White);
 
@@ -645,16 +621,16 @@ namespace TrafficSym2D
 
                 //zapis / odczyt
                 if (keybstate.IsKeyDown(Keys.S))
-                    TabLBMSerializer.SaveTabLBM(tabLBM[currentTabLBMIndex], currentTabLBMIndex);
+                    _tabLBMSerializer.SaveTabLBM(tabLBM[currentTabLBMIndex], currentTabLBMIndex);
                 else
                     if (keybstate.IsKeyDown(Keys.L))
-                        tabLBM[currentTabLBMIndex] = TabLBMSerializer.LoadTabLBM(currentTabLBMIndex);
+                        tabLBM[currentTabLBMIndex] = _tabLBMSerializer.LoadTabLBM(currentTabLBMIndex);
                     else
                         if (keybstate.IsKeyDown(Keys.K))
                         {
                             for (int i = 0; i < routeConfigList.Count; i++)
                             {
-                                LBMElement[,] temp = TabLBMSerializer.LoadTabLBM(i);
+                                LBMElement[,] temp = _tabLBMSerializer.LoadTabLBM(i);
                                 if (temp != null) tabLBM[i] = temp;
                             }
                         }
@@ -754,7 +730,7 @@ namespace TrafficSym2D
 
                 int lineDraw = 0;
                 //simulation state
-                spriteBatch.DrawString(defaultFont, "Auto: " + doAutomaticCars.ToString(), new Vector2(1, lineDraw+=20), Color.White);
+                spriteBatch.DrawString(defaultFont, "Auto: " + doAutomaticCars.ToString(), new Vector2(1, lineDraw += 20), Color.White);
                 //light state
                 spriteBatch.DrawString(defaultFont, string.Format("Light id:{0} c:{1}", lightConfigId, lightConfigList[lightConfigId].comment), new Vector2(1, lineDraw += 20), Color.White);
                 //car counter
@@ -774,7 +750,7 @@ namespace TrafficSym2D
                     //background
                     spriteBatch.Draw(texWall, new Rectangle(1, lineDraw, 50, 50), Color.Black);
                     //axis
-                    spriteBatch.Draw(texWall, new Rectangle(1, lineDraw+25, 50, 1), Color.White);
+                    spriteBatch.Draw(texWall, new Rectangle(1, lineDraw + 25, 50, 1), Color.White);
                     spriteBatch.Draw(texWall, new Rectangle(25, lineDraw, 1, 50), Color.White);
                     //joystick
                     spriteBatch.Draw(texWall, new Rectangle((int)(20 * selectedCar.userSteer) + 20, (int)(20 * -selectedCar.userAcc) + lineDraw + 20, 10, 10), Color.HotPink);
