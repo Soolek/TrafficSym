@@ -776,6 +776,7 @@ namespace TrafficSym2D
                     rand.Next(0, 101) / 100f
                 );
                 car.Update(gameTime);//po to by odswiezyl sobie punkty ramki
+                car.velocity = routeConfigList[tabLBMIndex].initialSpeed;
 
                 //sprawdzenie czy nie nachodzi na inne auta
                 foreach (Car car2 in cars)

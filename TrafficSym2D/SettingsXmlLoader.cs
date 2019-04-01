@@ -51,6 +51,7 @@ namespace TrafficSym2D
                 XmlNode xmlNodeMain = xmlConfig.ChildNodes.Item(i);
                 RouteConfig routeConfig = new RouteConfig();
                 routeConfig.timeBetweenCarsMs = Convert.ToInt32(xmlNodeMain.Attributes["timeBetweenCarsMs"].Value);
+                routeConfig.initialSpeed = xmlNodeMain.Attributes["initialSpeed"] != null ? float.Parse(xmlNodeMain.Attributes["initialSpeed"].Value) : 0;
 
                 for (int i2 = 0; i2 < xmlNodeMain.ChildNodes.Count; i2++)
                 {
