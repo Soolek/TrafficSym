@@ -16,7 +16,7 @@ namespace TrafficSym2D
 {
     public class Car
     {
-        Game1 parent;
+        TrafficSymGame parent;
 
         //index tabLBM przydzielony do niego
         public int tabLBMIndex = 0;
@@ -108,7 +108,7 @@ namespace TrafficSym2D
         private bool accelerating = false;
 
         //konstruktor
-        public Car(Game1 _parent, Texture2D _sprite, Vector2 _position, float rotation, int tabLBMIndex, float aggressiveness)
+        public Car(TrafficSymGame _parent, Texture2D _sprite, Vector2 _position, float rotation, int tabLBMIndex, float aggressiveness)
         {
             parent = _parent;
             sprite = _sprite;

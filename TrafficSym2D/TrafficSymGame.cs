@@ -13,24 +13,25 @@ using Microsoft.Xna.Framework.Media;
 using System.Xml;
 using System.IO;
 using System.Threading.Tasks;
+using TrafficSym2D.Enums;
 
 namespace TrafficSym2D
 {
     /*
-     * Komentarze:
-     * Czas w sekundach
-     * Odleglosc w m
+     * Time in seconds
+     * Distance in meters
      * 
-     * Predkosc liczona w m/s
-     * Przyspieszenie 1g = 10m/s^2
+     * Speed in meters/second
+     * Acceleration 1g = 10m/s^2
      */
 
     /// <summary>
-    /// Tomasz Su³kowski
+    /// Tomasz Sulkowski
+    /// www.CodeAndDrive.com
     /// Created: 19.04.2009
-    /// Symulator ruchu ulicznego 2D
+    /// City traffic simulator 2D
     /// </summary>
-    public class Game1 : Game
+    public class TrafficSymGame : Game
     {
         const int resX = 1024;
         const int resY = 768;
@@ -39,24 +40,21 @@ namespace TrafficSym2D
 
         private int mapsLoadedState = 0;
 
-        public static int elementSize = 5;
+        public static int elementSize = 5; //Lattice grid size
         public int elementSize2 = elementSize;
-        public static float vectorLength = 5f; //sugerowana wartosc to polowa powyzszego
+        public static float vectorLength = 5f;
 
         public static int countX = (resX / elementSize) + 1;
         public static int countY = (resY / elementSize) + 1;
-        public int countNotStaticX = countX;//potrzebne dla klas z referencjami do tej;
-        public int countNotStaticY = countY;//potrzebne dla klas z referencjami do tej;
+        public int countNotStaticX = countX;
+        public int countNotStaticY = countY;
 
         public static float FLOW_MAX = 0.05f;
         public static float COEF = 0.24f;
         public static float SQRT2 = (float)Math.Sqrt(2.0);
 
         public Random rand = new Random();
-        /// <summary>
-        /// stan symulacji, 0-pauza? 1-symulacja lattice 2-symulacja auta
-        /// </summary>
-        public int gameState = 0;
+        public GameState gameState = 0;
 
         public bool doAi = true;
         public bool doLBM = false;
@@ -117,7 +115,7 @@ namespace TrafficSym2D
         public Texture2D texWall;
         public Texture2D texVector;
 
-        public Game1()
+        public TrafficSymGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -412,12 +410,12 @@ namespace TrafficSym2D
             foreach (Keys k in keybstate.GetPressedKeys())
                 switch (k)
                 {
-                    case Keys.D0: gameState = 0; break;
-                    case Keys.D1: gameState = 1; break;
-                    case Keys.D2: gameState = 2; break;
+                    case Keys.D0: gameState = GameState.PauseEdit; break;
+                    case Keys.D1: gameState = GameState.SimulateLBM; break;
+                    case Keys.D2: gameState = GameState.SimulateTraffic; break;
                 }
 
-            if (gameState == 0)
+            if (gameState == GameState.PauseEdit)
             {
                 MouseState mousestate = Mouse.GetState();
                 if (prevMouseState == null) prevMouseState = mousestate;
@@ -446,7 +444,7 @@ namespace TrafficSym2D
             }
 
             //LBM
-            if ((gameState == 1) && doLBM)
+            if ((gameState == GameState.SimulateLBM) && doLBM)
             {
                 Array.Clear(fx, 0, fx.Length);
                 Array.Clear(fy, 0, fy.Length);
@@ -506,7 +504,7 @@ namespace TrafficSym2D
                     }
             }
 
-            if (gameState == 2)
+            if (gameState == GameState.SimulateTraffic)
             {
                 //jak jeszcze nie zainicjowane to ustawiamy pierwszy config
                 if (lightConfigList.Count > 0)
@@ -578,7 +576,7 @@ namespace TrafficSym2D
                         else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isHole)
                             carsToRemove.Add(car);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
 #if DEBUG
                         throw e;
@@ -624,7 +622,7 @@ namespace TrafficSym2D
                     }
                 }
 
-                if (tabLBM.Count() > 0) gameState = 2;
+                if (tabLBM.Count() > 0) gameState = GameState.SimulateTraffic;
 
                 return;
             }
@@ -635,7 +633,7 @@ namespace TrafficSym2D
             spriteBatch.Draw(mapLogicTexture, viewportRect, Color.White);
 
             //LGA
-            if (gameState == 1)
+            if (gameState == GameState.SimulateLBM)
             {
                 if (keybstate.IsKeyDown(Keys.Up))
                     currentTabLBMIndex++;
@@ -708,7 +706,7 @@ namespace TrafficSym2D
             }
 
             //sim
-            if (gameState == 2)
+            if (gameState == GameState.SimulateTraffic)
             {
                 if (keybstate.IsKeyDown(Keys.Q))
                     AddNewCar(rand.Next(routeConfigList.Count), gameTime);
@@ -793,8 +791,13 @@ namespace TrafficSym2D
             }
 
             //gameState
+            var drawVector = new Vector2(1f, 1f);
             for (int i = 0; i <= 2; i++)
-                spriteBatch.DrawString(defaultFont, i.ToString(), new Vector2(10f * i + 1, 1f), (i == gameState ? Color.White : Color.Black));
+            {
+                spriteBatch.DrawString(defaultFont, i.ToString(), drawVector, (i == (int)gameState ? Color.White : Color.Black));
+                drawVector.X += 10;
+            }
+            spriteBatch.DrawString(defaultFont, Enum.GetName(typeof(GameState), gameState), drawVector, Color.White);
 
             base.Draw(gameTime);
             spriteBatch.End();

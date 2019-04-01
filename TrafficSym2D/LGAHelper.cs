@@ -10,7 +10,7 @@ namespace TrafficSym2D
     public static class LGAHelper
     {
         public static Random r = new Random();
-        public static Game1 parent;
+        public static TrafficSymGame parent;
         public static int maxParticleDensity = 1;
 
         public static bool isWall(byte b)

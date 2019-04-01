@@ -10,7 +10,7 @@ namespace TrafficSym2D
 {
     public static class TabLBMSerializer
     {
-        public static Game1 parent;
+        public static TrafficSymGame parent;
 
         public static void SaveTabLBM(LBMElement[,] tab, int index)
         {

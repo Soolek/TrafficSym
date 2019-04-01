@@ -8,7 +8,7 @@ namespace TrafficSym2D
 {
     public static class GeneralHelper
     {
-        public static Game1 parent;
+        public static TrafficSymGame parent;
         public static Vector2 NormalizeVector(Vector2 vec)
         {
             if (vec.X < parent.elementSize2) vec.X = parent.elementSize2;
