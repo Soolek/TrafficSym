@@ -28,5 +28,10 @@ namespace TrafficSym2D
 
             return angle;
         }
+
+        public static float Min(params float[] values)
+        {
+            return Enumerable.Min(values);
+        }
     }
 }

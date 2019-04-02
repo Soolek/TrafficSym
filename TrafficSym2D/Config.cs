@@ -9,7 +9,7 @@ namespace TrafficSym2D
     public static class Config
     {
         public static string ConfigDir = "default";
-        public static bool GiveWayToRight = false;
+        public static bool GiveWayToLeft = false;
         public static int EndAfterCarsSpawned = -1;
         public static bool RecordToCsv = false;
 
@@ -20,9 +20,9 @@ namespace TrafficSym2D
             {
                 ConfigDir = temp;
             }
-            if(arguments.TryGetValue("givewaytoright", out temp))
+            if(arguments.TryGetValue("givewaytoleft", out temp))
             {
-                GiveWayToRight = bool.Parse(temp);
+                GiveWayToLeft = bool.Parse(temp);
             }
             if (arguments.TryGetValue("endaftercarsspawned", out temp))
             {

@@ -227,7 +227,7 @@ namespace TrafficSym2D
 
             //punktowy vektor rownolegly z przednim zderzakiem
 
-            #region przyspieszanie - sprawdzanie chodnika, swiatel oraz pozostalych uczestnikow ruchu by w nich nie wjechac, takze puszczanie z prawej
+            #region acceleration control: walkway, traffic lights, other cars + giving way to the right (or left)
             float dist = velocity * velocity / force_braking;
             if (velocity < 0)
                 if (dist > 1f) dist = 1f;
@@ -284,36 +284,36 @@ namespace TrafficSym2D
                             if(this.IntersectsOtherCar(otherCar))
                                 SeparateCars(this, otherCar);
                         }
-                        
-                        #region puszczanie z prawej...
+
+                        #region giving way to the right (or left)
                         else
                         {
-                            float angleOtherCar = (float)Math.Atan2(otherCar.position.Y - position.Y, otherCar.position.X - position.X);
-                            angleOtherCar -= desiredAngle;
-                            angleOtherCar = GeneralHelper.NormalizeAngle(angleOtherCar);
+                            float revGiveWay = Config.GiveWayToLeft ? -1f : 1f;
 
-                            if ((angleOtherCar > 0f) && (angleOtherCar < MathHelper.PiOver2)) //jak miedzy 0 a 90 stopni i wystarczajaco blisko
+                            float relativeAngleOtherCar = revGiveWay * ((float)Math.Atan2(otherCar.position.Y - posBumperFront.Y, otherCar.position.X - posBumperFront.X) - desiredAngle);
+                            relativeAngleOtherCar = GeneralHelper.NormalizeAngle(relativeAngleOtherCar);
+
+                            if ((relativeAngleOtherCar > 0f) && (relativeAngleOtherCar < MathHelper.PiOver2)) //jak miedzy 0 a 90 stopni i wystarczajaco blisko
                             {
-                                float angleRelative = GeneralHelper.NormalizeAngle(desiredAngle - otherCar.rotation);
-                                float param = (float)Math.Sin(angleRelative);
+                                float angleRelative = revGiveWay * (desiredAngle - otherCar.rotation);
+                                angleRelative = GeneralHelper.NormalizeAngle(angleRelative);
+                                float perpendicularity = (float)Math.Sin(angleRelative);
 
-                                Vector2 tempv = framePointFR - otherCar.framePointFL;
-                                float lengthDiff = tempv.Length();
-                                tempv = framePointFR - otherCar.position;
-                                if (tempv.Length() < lengthDiff) lengthDiff = tempv.Length();
-                                tempv = framePointFR - otherCar.framePointRL;
-                                if (tempv.Length() < lengthDiff) lengthDiff = tempv.Length();
+                                float minLengthDiff = Config.GiveWayToLeft ?
+                                    GeneralHelper.Min((framePointFL - otherCar.framePointFR).Length(), (framePointFL - otherCar.framePointRR).Length())
+                                    : GeneralHelper.Min((framePointFR - otherCar.framePointFL).Length(), (framePointFR - otherCar.framePointRL).Length());
 
-                                float vel = otherCar.velocity;
-                                if ((vel < 3f) && (vel > 0.1f)) vel = 3f;
+                                float otherCarVel = ((otherCar.velocity < 3f) && (otherCar.velocity > 0.1f)) ? 3f : otherCar.velocity;
 
                                 float addParam = spriteWidth / 2f;
-                                if ((vel * velocity) < 1f) addParam *= (vel * velocity);
+                                if ((otherCarVel * velocity) < 1f) addParam *= (otherCarVel * velocity);
 
-                                if (((vel * velocity * pixelToMeterRatio / otherCar.force_braking + addParam) * param) > lengthDiff)
+                                //Calculating whether other car braking distance is bigger than perpendicular distance to current car
+                                if (((otherCarVel * velocity * pixelToMeterRatio / otherCar.force_braking + addParam) * perpendicularity) > minLengthDiff)
                                 {
                                     intersectsSmth = true;
-                                    userAcc = (velocity <= 0 ? 0 : -velocity);
+                                    var newAcc = (velocity <= 0 ? 0 : -velocity);
+                                    userAcc = newAcc < userAcc ? newAcc : userAcc;
                                 }
                             }
                         }
