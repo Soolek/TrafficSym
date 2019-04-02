@@ -62,23 +62,6 @@ namespace TrafficSym2D
                     int x2 = Convert.ToInt32(xmlNode.Attributes["x2"].Value);
                     int y2 = Convert.ToInt32(xmlNode.Attributes["y2"].Value);
 
-                    if (xmlNode.Name.Equals("start") || xmlNode.Name.Equals("end"))
-                    {
-                        int temp;
-                        if (x1 > x2)
-                        {
-                            temp = x1;
-                            x1 = x2;
-                            x2 = temp;
-                        }
-                        if (y1 > y2)
-                        {
-                            temp = y1;
-                            y1 = y2;
-                            y2 = temp;
-                        }
-                    }
-
                     if (x1 > (_parent.resX - _parent.elementSize)) x1 = (_parent.resX - _parent.elementSize);
                     if (x2 > (_parent.resX - _parent.elementSize)) x2 = (_parent.resX - _parent.elementSize);
                     if (y1 > (_parent.resY - _parent.elementSize)) y1 = (_parent.resY - _parent.elementSize);

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
+using TrafficSym2D.Enums;
 
-namespace TrafficSym2D
+namespace TrafficSym2D.LBM
 {
     [Serializable()]
     public class LBMElement : ISerializable
     {
         private float _x, _y;
         private float _density;
-        public byte nodeType;
+        public LBMNodeType nodeType;
 
         public LBMElement()
         {
@@ -25,7 +26,7 @@ namespace TrafficSym2D
             this._x = (float)info.GetValue("_x", typeof(float));
             this._y = (float)info.GetValue("_y", typeof(float));
             this._density = (float)info.GetValue("_density", typeof(float));
-            this.nodeType = (byte)info.GetValue("nodeType", typeof(byte));
+            this.nodeType = (LBMNodeType)info.GetValue("nodeType", typeof(byte));
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
@@ -53,12 +54,12 @@ namespace TrafficSym2D
         {
             get
             {
-                return (nodeType == 1);
+                return (nodeType == LBMNodeType.Wall);
             }
             set
             {
                 if (value)
-                    nodeType = 1;
+                    nodeType = LBMNodeType.Wall;
             }
         }
 
@@ -66,25 +67,25 @@ namespace TrafficSym2D
         {
             get
             {
-                return (nodeType == 2);
+                return (nodeType == LBMNodeType.Source);
             }
             set
             {
                 if (value)
-                    nodeType = 2;
+                    nodeType = LBMNodeType.Source;
             }
         }
 
-        public bool isHole
+        public bool isSink
         {
             get
             {
-                return (nodeType == 3);
+                return (nodeType == LBMNodeType.Sink);
             }
             set
             {
                 if (value)
-                    nodeType = 3;
+                    nodeType = LBMNodeType.Sink;
             }
         }
 
@@ -92,17 +93,18 @@ namespace TrafficSym2D
         {
             get
             {
-                if (isSource) return 1f;
+                if (isSource)
+                    return 1f;
+                else if (isSink)
+                    return -1f;
+                else if (isWall)
+                    return 0f;
                 else
-                    if (isHole) return -1f;
-                    else
-                        if (isWall) return 0f;
-                        else
-                            return _density;
+                    return _density;
             }
             set
             {
-                if (!isSource && !isHole) _density = value;
+                if (!isSource && !isSink) _density = value;
             }
         }
 

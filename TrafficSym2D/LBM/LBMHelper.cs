@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using TrafficSym2D.Enums;
 
-namespace TrafficSym2D
+namespace TrafficSym2D.LBM
 {
-    public static class LGAHelper
+    public static class LBMHelper
     {
         public static Random r = new Random();
         public static TrafficSymGame parent;
@@ -138,19 +139,23 @@ namespace TrafficSym2D
             return Color.Black;
         }
 
-        //public static Color getParticleAverageColor(byte[,] tab, int x, int y)
-        //{
-        //    if ((x + parent.particleAverageSize > parent.presX) || (y + parent.particleAverageSize > parent.presY))
-        //        return Color.Gray;
-        //    int sum=0;
-        //    for (int tx = x; tx < x + parent.particleAverageSize; tx++)
-        //        for (int ty = y; ty < y + parent.particleAverageSize; ty++)
-        //            sum += getParticleSum(tab[tx, ty]);
+        public static void DrawLineLBM(LBMElement[,] tabLBM, int elementSize, int x1, int y1, int x2, int y2, LBMNodeType nodeType)
+        {
+            float xDiff = (x2 - x1);
+            float yDiff = (y2 - y1);
 
-        //    if (sum > maxParticleDensity) maxParticleDensity = sum;
+            float x = x1;
+            float y = y1;
 
-        //    if (sum == 0) return Color.Gray;
-        //    return Color.Lerp(Color.Red, Color.Blue, ((sum * 1.0f) / (maxParticleDensity * 1.0f)));
-        //}
+            float minSteps = Math.Max(Math.Abs(xDiff), Math.Abs(yDiff));
+            minSteps = minSteps == 0 ? 1 : minSteps;
+
+            for(int i=0;i<=minSteps;i++)
+            {
+                x+=xDiff/minSteps;
+                y+=yDiff/minSteps;
+                tabLBM[(int)Math.Round(x/elementSize),(int)Math.Round(y/elementSize)].nodeType=nodeType;
+            }
+        }
     }
 }

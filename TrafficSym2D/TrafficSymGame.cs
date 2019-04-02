@@ -14,6 +14,7 @@ using System.Xml;
 using System.IO;
 using System.Threading.Tasks;
 using TrafficSym2D.Enums;
+using TrafficSym2D.LBM;
 
 namespace TrafficSym2D
 {
@@ -124,7 +125,7 @@ namespace TrafficSym2D
         protected override void Initialize()
         {
             _tabLBMSerializer = new TabLBMSerializer(Path.Combine("Configs", Config.ConfigDir));
-            LGAHelper.parent = this;
+            LBMHelper.parent = this;
             GeneralHelper.parent = this;
 
             mapTexture = LoadMap(Path.Combine("Configs", Config.ConfigDir, "map.tga"));
@@ -244,11 +245,11 @@ namespace TrafficSym2D
             {
                 RouteConfig rc = routeConfigList[i];
                 foreach (RouteStart rs in rc.routeStart)
-                    DrawLineLBM(tabLBM[i], rs.x1, rs.y1, rs.x2, rs.y2, 2);
+                    LBMHelper.DrawLineLBM(tabLBM[i], elementSize, rs.x1, rs.y1, rs.x2, rs.y2, LBMNodeType.Source);
                 foreach (RouteEnd re in rc.routeEnd)
-                    DrawLineLBM(tabLBM[i], re.x1, re.y1, re.x2, re.y2, 3);
+                    LBMHelper.DrawLineLBM(tabLBM[i], elementSize, re.x1, re.y1, re.x2, re.y2, LBMNodeType.Sink);
                 foreach (RouteWall rw in rc.routeWall)
-                    DrawLineLBM(tabLBM[i], rw.x1, rw.y1, rw.x2, rw.y2, 1);
+                    LBMHelper.DrawLineLBM(tabLBM[i], elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
             }
 
             base.LoadContent();
@@ -372,7 +373,34 @@ namespace TrafficSym2D
 
             if (gameState == GameState.SimulateTraffic)
             {
-                //jak jeszcze nie zainicjowane to ustawiamy pierwszy config
+                //Automatic car adding
+                if (doAutomaticCars)
+                {
+                    for (int i = 0; i < routeConfigList.Count; i++)
+                    {
+                        RouteConfig rc = routeConfigList[i];
+                        if (gameTime.TotalGameTime.TotalMilliseconds > (rc.lastCarOutTime.TotalMilliseconds + rc.timeBetweenCarsMs))
+                        {
+                            rc.lastCarOutTime = gameTime.TotalGameTime;
+
+                            if (Config.EndAfterCarsSpawned > 0)
+                            {
+                                if (_carIndex > Config.EndAfterCarsSpawned)
+                                {
+                                    if (cars.Count == 0)
+                                    {
+                                        this.Exit();
+                                    }
+                                    break;
+                                }
+                            }
+
+                            AddNewCar(i, gameTime);
+                        }
+                    }
+                }
+
+                //Lights handling
                 if (lightConfigList.Count > 0)
                 {
                     if (lightConfigId == -1)
@@ -383,34 +411,9 @@ namespace TrafficSym2D
                             if (!lightConfigList[lightConfigId].lightId.Contains(x)) //jak zawiera oznacza ze ma byc to swiatlo zielone i nie malowac...
                             {
                                 RouteWall rw = lightList[x];
-                                DrawLineLBM(lightTabLBM, rw.x1, rw.y1, rw.x2, rw.y2, 1);
+                                LBMHelper.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
                             }
                     }
-
-                    //Automatic car adding
-                    if (doAutomaticCars)
-                        for (int i = 0; i < routeConfigList.Count; i++)
-                        {
-                            RouteConfig rc = routeConfigList[i];
-                            if (gameTime.TotalGameTime.TotalMilliseconds > (rc.lastCarOutTime.TotalMilliseconds + rc.timeBetweenCarsMs))
-                            {
-                                rc.lastCarOutTime = gameTime.TotalGameTime;
-                                
-                                if (Config.EndAfterCarsSpawned > 0)
-                                {
-                                    if (_carIndex > Config.EndAfterCarsSpawned)
-                                    {
-                                        if(cars.Count==0)
-                                        {
-                                            this.Exit();
-                                        }
-                                        break;
-                                    }
-                                }
-
-                                AddNewCar(i, gameTime);
-                            }
-                        }
 
                     //zmiana swiatel
                     if (gameTime.TotalGameTime.TotalMilliseconds > (lightLastChangeTime.TotalMilliseconds + lightConfigList[lightConfigId].timeToWaitMs))
@@ -419,7 +422,7 @@ namespace TrafficSym2D
                         for (int x = 0; x < lightList.Count; x++)
                         {
                             RouteWall rw = lightList[x];
-                            DrawLineLBM(lightTabLBM, rw.x1, rw.y1, rw.x2, rw.y2, 0);
+                            LBMHelper.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, 0);
                         }
                         //malowanie nowych scian
                         lightConfigId++;
@@ -429,7 +432,7 @@ namespace TrafficSym2D
                             if (!lightConfigList[lightConfigId].lightId.Contains(x)) //jak zawiera oznacza ze ma byc to swiatlo zielone i nie malowac...
                             {
                                 RouteWall rw = lightList[x];
-                                DrawLineLBM(lightTabLBM, rw.x1, rw.y1, rw.x2, rw.y2, 1);
+                                LBMHelper.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
                             }
                     }
                 }
@@ -458,7 +461,7 @@ namespace TrafficSym2D
                         //wywalanie z listy jak dojechal do konca
                         if (((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1))
                             carsToRemove.Add(car);
-                        else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isHole)
+                        else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isSink)
                             carsToRemove.Add(car);
                     }
                     catch (Exception e)
@@ -561,7 +564,7 @@ namespace TrafficSym2D
                                         spriteBatch.Draw(texWall, new Rectangle(xelem, yelem, elementSize, elementSize), new Color(0, 255, 0));
                                         spriteBatch.Draw(texWall, new Rectangle(xelem + 1, yelem + 1, elementSize - 2, elementSize - 2), new Color(255, 0, 0));
                                     }
-                                    else if (l.isHole)
+                                    else if (l.isSink)
                                     {
                                         spriteBatch.Draw(texWall, new Rectangle(xelem, yelem, elementSize, elementSize), new Color(0, 255, 0));
                                         spriteBatch.Draw(texWall, new Rectangle(xelem + 1, yelem + 1, elementSize - 2, elementSize - 2), new Color(0, 0, 255));
@@ -644,7 +647,10 @@ namespace TrafficSym2D
                 //simulation state
                 spriteBatch.DrawString(defaultFont, "Auto: " + doAutomaticCars.ToString(), new Vector2(1, lineDraw += 20), Color.White);
                 //light state
-                spriteBatch.DrawString(defaultFont, string.Format("Light id:{0} c:{1}", lightConfigId, lightConfigList[lightConfigId].comment), new Vector2(1, lineDraw += 20), Color.White);
+                if (lightConfigList.Count > 0)
+                {
+                    spriteBatch.DrawString(defaultFont, string.Format("Light id:{0} c:{1}", lightConfigId, lightConfigList[lightConfigId].comment), new Vector2(1, lineDraw += 20), Color.White);
+                }
                 //car counter
                 spriteBatch.DrawString(defaultFont, string.Format("cars:{0} finished:{1}", currentCarCount, finishedCarCount), new Vector2(1, lineDraw += 20), Color.White);
 
@@ -701,87 +707,6 @@ namespace TrafficSym2D
             angle = (float)(Math.Atan2(diff.Y, diff.X)) - MathHelper.PiOver2;
 
             spriteBatch.Draw(spr, a, null, col, angle, Origin, Scale, SpriteEffects.None, 1.0f);
-        }
-
-        /// <summary>
-        /// Umieszcza w tabeli lbm linie danego typu
-        /// </summary>
-        /// <param name="NodeType">1 - sciana, 2 - source, 3 - hole</param>
-        void DrawLineLBM(LBMElement[,] tabLBM, int x1, int y1, int x2, int y2, byte nodeType)
-        {
-            x1 /= elementSize;
-            y1 /= elementSize;
-            x2 /= elementSize;
-            y2 /= elementSize;
-
-            if (x1 == x2)
-            {
-                if (y1 > y2)
-                {
-                    int temp = x2;
-                    x2 = x1;
-                    x1 = temp;
-                    temp = y2;
-                    y2 = y1;
-                    y1 = temp;
-                }
-
-                for (int i = y1; i <= y2; i++)
-                {
-                    //if ((!tabLBM[x1, i].isWall) || (nodeType == 0))
-                    tabLBM[x1, i].nodeType = nodeType;
-                }
-            }
-            else if (y1 == y2)
-            {
-                if (x1 > x2)
-                {
-                    int temp = x2;
-                    x2 = x1;
-                    x1 = temp;
-                    temp = y2;
-                    y2 = y1;
-                    y1 = temp;
-                }
-
-                for (int i = x1; i <= x2; i++)
-                {
-                    //if ((!tabLBM[x1, i].isWall) || (nodeType == 0))
-                    tabLBM[i, y1].nodeType = nodeType;
-                }
-            }
-            else if (Math.Abs(x2 - x1) > Math.Abs(y2 - y1))
-            {
-                if (x1 > x2)
-                {
-                    int temp = x2;
-                    x2 = x1;
-                    x1 = temp;
-                    temp = y2;
-                    y2 = y1;
-                    y1 = temp;
-                }
-
-                for (int i = x1; i <= x2; i++)
-                    //if ((!tabLBM[i, (((i - x1) * (y2 - y1)) / (x2 - x1)) + y1].isWall) || (nodeType == 0))
-                    tabLBM[i, (((i - x1) * (y2 - y1)) / (x2 - x1)) + y1].nodeType = nodeType;
-            }
-            else
-            {
-                if (y1 > y2)
-                {
-                    int temp = x2;
-                    x2 = x1;
-                    x1 = temp;
-                    temp = y2;
-                    y2 = y1;
-                    y1 = temp;
-                }
-
-                for (int i = y1; i <= y2; i++)
-                    //if ((!tabLBM[(((i - y1) * (x2 - x1)) / (y2 - y1)) + x1, i].isWall) || (nodeType == 0))
-                    tabLBM[(((i - y1) * (x2 - x1)) / (y2 - y1)) + x1, i].nodeType = nodeType;
-            }
         }
 
         int _carIndex = 0;

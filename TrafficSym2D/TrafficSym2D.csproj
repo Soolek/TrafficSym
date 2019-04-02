@@ -45,17 +45,18 @@
     <Compile Include="Config.cs" />
     <Compile Include="CsvRecorder.cs" />
     <Compile Include="Enums\GameState.cs" />
+    <Compile Include="Enums\LBMNodeType.cs" />
     <Compile Include="SettingsXmlLoader.cs" />
     <Compile Include="TrafficSymGame.cs" />
     <Compile Include="GeneralHelper.cs" />
-    <Compile Include="LBMElement.cs" />
-    <Compile Include="LGAHelper.cs" />
+    <Compile Include="LBM\LBMElement.cs" />
+    <Compile Include="LBM\LBMHelper.cs" />
     <Compile Include="LightConfig.cs" />
     <Compile Include="OrientationHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteConfig.cs" />
-    <Compile Include="TabLBMSerializer.cs" />
+    <Compile Include="LBM\TabLBMSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -66,6 +67,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Configs\Highway\settings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\gas\wall.bmp" />
     <Content Include="Content\maps\map_b.bmp" />
     <Content Include="Icon.ico" />
@@ -79,52 +83,7 @@
     <None Include="Configs\Default\map.tga">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Configs\Default\tabLBM0.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM1.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM10.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM11.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM12.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM13.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM14.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM15.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM2.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM3.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM4.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM5.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM6.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM7.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM8.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Configs\Default\tabLBM9.bin">
+    <None Include="Configs\Highway\map.tga">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Content\arial12.spritefont" />

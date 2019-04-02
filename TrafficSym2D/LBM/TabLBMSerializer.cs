@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace TrafficSym2D
+namespace TrafficSym2D.LBM
 {
     public class TabLBMSerializer
     {
