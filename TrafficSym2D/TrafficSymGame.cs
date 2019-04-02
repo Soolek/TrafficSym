@@ -315,60 +315,70 @@ namespace TrafficSym2D
             {
                 Array.Clear(fx, 0, fx.Length);
                 Array.Clear(fy, 0, fy.Length);
-                //2. Pochodne cisnienia
-                for (int y = 0; y < countY - 1; y++)
-                    for (int x = 0; x < countX - 1; x++)
-                        if (!tabLBM[currentTabLBMIndex][x, y].isWall)
-                        {
-                            if (!tabLBM[currentTabLBMIndex][x + 1, y].isWall)
-                                fx[x, y] = MathHelper.Clamp(COEF * (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x + 1, y].density), -FLOW_MAX, FLOW_MAX);
-                            else
-                                fx[x, y] = 0f;
 
-                            if (!tabLBM[currentTabLBMIndex][x, y + 1].isWall)
-                                fy[x, y] = MathHelper.Clamp(COEF * (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x, y + 1].density), -FLOW_MAX, FLOW_MAX);
-                            else
-                                fy[x, y] = 0f;
-                        }
-                        else
-                        {
-                            fx[x, y] = 0f;
-                            fy[x, y] = 0f;
-                        }
+                //LBM flow
+                Parallel.For(0, (countY - 1) * (countX - 1), i =>
+                {
+                    int y = i / (countX - 1);
+                    int x = i % (countX - 1);
 
-                float dens;//temp
-                //3. Przeplyw
-                for (int y = 0; y < countY; y++)
-                    for (int x = 0; x < countX; x++)
-                        if (!tabLBM[currentTabLBMIndex][x, y].isWall)
-                        {
-                            dens = tabLBM[currentTabLBMIndex][x, y].density;
-
-                            if (x > 0) dens += fx[x - 1, y];
-                            if (y > 0) dens += fy[x, y - 1];
-
-                            dens -= fx[x, y];
-                            dens -= fy[x, y];
-
-                            tabLBM[currentTabLBMIndex][x, y].density = MathHelper.Clamp(dens, -10f, 10f);
-                        }
-
-                float vx, vy;
-                //4. do graficznego pokazania przeplywu - roznice cisnien
-                for (int y = 1; y < countY - 1; y++)
-                    for (int x = 1; x < countX - 1; x++)
+                    if (!tabLBM[currentTabLBMIndex][x, y].isWall)
                     {
-                        if (!tabLBM[currentTabLBMIndex][x, y].isWall)
-                        {
-                            vx = 0f; vy = 0f;
-                            if (!tabLBM[currentTabLBMIndex][x - 1, y].isWall) vx += (tabLBM[currentTabLBMIndex][x - 1, y].density - tabLBM[currentTabLBMIndex][x, y].density);
-                            if (!tabLBM[currentTabLBMIndex][x + 1, y].isWall) vx += (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x + 1, y].density);
-                            tabLBM[currentTabLBMIndex][x, y].x = MathHelper.Clamp(vx * 100f, ((float)-elementSize), ((float)elementSize));
-                            if (!tabLBM[currentTabLBMIndex][x, y - 1].isWall) vy += (tabLBM[currentTabLBMIndex][x, y - 1].density - tabLBM[currentTabLBMIndex][x, y].density);
-                            if (!tabLBM[currentTabLBMIndex][x, y + 1].isWall) vy += (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x, y + 1].density);
-                            tabLBM[currentTabLBMIndex][x, y].y = MathHelper.Clamp(vy * 100f, ((float)-elementSize), ((float)elementSize));
-                        }
+                        if (!tabLBM[currentTabLBMIndex][x + 1, y].isWall)
+                            fx[x, y] = MathHelper.Clamp(COEF * (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x + 1, y].density), -FLOW_MAX, FLOW_MAX);
+                        else
+                            fx[x, y] = 0f;
+
+                        if (!tabLBM[currentTabLBMIndex][x, y + 1].isWall)
+                            fy[x, y] = MathHelper.Clamp(COEF * (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x, y + 1].density), -FLOW_MAX, FLOW_MAX);
+                        else
+                            fy[x, y] = 0f;
                     }
+                    else
+                    {
+                        fx[x, y] = 0f;
+                        fy[x, y] = 0f;
+                    }
+                });
+
+                //LBM density
+                Parallel.For(0, (countY) * (countX), i =>
+                {
+                    int y = i / (countX);
+                    int x = i % (countX);
+
+                    if (!tabLBM[currentTabLBMIndex][x, y].isWall)
+                    {
+                        float dens = tabLBM[currentTabLBMIndex][x, y].density;
+
+                        if (x > 0) dens += fx[x - 1, y];
+                        if (y > 0) dens += fy[x, y - 1];
+
+                        dens -= fx[x, y];
+                        dens -= fy[x, y];
+
+                        tabLBM[currentTabLBMIndex][x, y].density = MathHelper.Clamp(dens, -10f, 10f);
+                    }
+                });
+
+                //Graphical LBM flow
+                Parallel.For(0, (countY - 1) * (countX - 1), i =>
+                {
+                    int y = i / (countX - 1);
+                    int x = i % (countX - 1);
+
+                    if (!tabLBM[currentTabLBMIndex][x, y].isWall)
+                    {
+                        float vx = 0f;
+                        float vy = 0f;
+                        if (!tabLBM[currentTabLBMIndex][x - 1, y].isWall) vx += (tabLBM[currentTabLBMIndex][x - 1, y].density - tabLBM[currentTabLBMIndex][x, y].density);
+                        if (!tabLBM[currentTabLBMIndex][x + 1, y].isWall) vx += (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x + 1, y].density);
+                        tabLBM[currentTabLBMIndex][x, y].x = MathHelper.Clamp(vx * 100f, ((float)-elementSize), ((float)elementSize));
+                        if (!tabLBM[currentTabLBMIndex][x, y - 1].isWall) vy += (tabLBM[currentTabLBMIndex][x, y - 1].density - tabLBM[currentTabLBMIndex][x, y].density);
+                        if (!tabLBM[currentTabLBMIndex][x, y + 1].isWall) vy += (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x, y + 1].density);
+                        tabLBM[currentTabLBMIndex][x, y].y = MathHelper.Clamp(vy * 100f, ((float)-elementSize), ((float)elementSize));
+                    }
+                });
             }
 
             if (gameState == GameState.SimulateTraffic)
