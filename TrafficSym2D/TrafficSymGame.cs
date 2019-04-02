@@ -110,6 +110,9 @@ namespace TrafficSym2D
         public Texture2D texWall;
         public Texture2D texVector;
 
+        //csv
+        private CsvRecorder _csvRecorder;
+
         public TrafficSymGame(Dictionary<string, string> arguments)
         {
             Content.RootDirectory = "Content";
@@ -131,6 +134,12 @@ namespace TrafficSym2D
             graphics.PreferredBackBufferHeight = resY;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
+
+            if(Config.RecordToCsv)
+            {
+                var csvFileName = string.Format("record-{0}.csv", DateTime.Now.ToString("dd_MM_yy_HH_mm"));
+                _csvRecorder = new CsvRecorder(Path.Combine("Configs", Config.ConfigDir, csvFileName));
+            }
 
             base.Initialize();
         }
@@ -245,18 +254,17 @@ namespace TrafficSym2D
             base.LoadContent();
         }
 
-        protected override void UnloadContent()
-        {
-        }
-
         TimeSpan lightLastChangeTime = new TimeSpan(0);
         int lightConfigId = -1;
 
         MouseState prevMouseState;
         int posx, posy;
 
+        private long _frameCount = 0;
+
         protected override void Update(GameTime gameTime)
         {
+            _frameCount++;
             //GameTime customGameTime = new GameTime(gameTime.TotalRealTime, new TimeSpan(200000), gameTime.TotalGameTime, gameTime.ElapsedGameTime);
 
             // Allows the game to exit
@@ -428,6 +436,12 @@ namespace TrafficSym2D
                         if (car.Equals(selectedCar)) car.DoManualSteer(keybstate);
 
                         car.Update(gameTime);
+
+                        if(_csvRecorder!=null)
+                        {
+                            _csvRecorder.AddData(_frameCount, gameTime.TotalGameTime, lightConfigId, car);
+                        }
+
                         //wywalanie z listy jak dojechal do konca
                         if (((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1))
                             carsToRemove.Add(car);
@@ -437,7 +451,7 @@ namespace TrafficSym2D
                     catch (Exception e)
                     {
 #if DEBUG
-                        throw e;
+                        throw;
 #endif
                         carsToRemove.Add(car);
                     }
@@ -445,6 +459,11 @@ namespace TrafficSym2D
 
                 currentCarCount = cars.Count;
                 finishedCarCount += carsToRemove.Count;
+
+                if (_csvRecorder != null)
+                {
+                    _csvRecorder.Flush();
+                }
 
                 foreach (Car car in carsToRemove)
                     cars.Remove(car);
@@ -752,6 +771,7 @@ namespace TrafficSym2D
             }
         }
 
+        int _carIndex = 0;
         /// <summary>
         /// dodaje nowe auto na podstawie danych z route config o odpowiednim indexie
         /// </summary>
@@ -805,6 +825,7 @@ namespace TrafficSym2D
                 //jak wszystko ok to mamy miejsce
                 if (ok)
                 {
+                    car.Id = _carIndex++;
                     cars.Add(car);
                     break;
                 }

@@ -11,6 +11,7 @@ namespace TrafficSym2D
         public static string ConfigDir = "default";
         public static bool GiveWayToRight = false;
         public static int EndAfterCarsSpawned = -1;
+        public static bool RecordToCsv = false;
 
         public static void SetParameters(Dictionary<string, string> arguments)
         {
@@ -26,6 +27,10 @@ namespace TrafficSym2D
             if (arguments.TryGetValue("endaftercarsspawned", out temp))
             {
                 EndAfterCarsSpawned = int.Parse(temp);
+            }
+            if (arguments.TryGetValue("recordtocsv", out temp))
+            {
+                RecordToCsv = bool.Parse(temp);
             }
         }
     }

@@ -18,6 +18,8 @@ namespace TrafficSym2D
     {
         TrafficSymGame parent;
 
+        public int Id { get; set; }
+
         //index tabLBM przydzielony do niego
         public int tabLBMIndex = 0;
 
@@ -58,11 +60,7 @@ namespace TrafficSym2D
 
         public Vector2 position;
         private Vector2 prevPosition;
-        private float rotation;
-        public float getRotation()
-        {
-            return rotation;
-        }
+        public float rotation;
         public Vector2 center;
 
         //fizyka
@@ -140,7 +138,7 @@ namespace TrafficSym2D
             Vector2 leftSeeker = new Vector2(((float)Math.Cos(rotation - MathHelper.PiOver2)), ((float)Math.Sin(rotation - MathHelper.PiOver2)));
             Vector2 frontSeeker = new Vector2(((float)Math.Cos(rotation)), ((float)Math.Sin(rotation)));
 
-            desiredAngle = getRotation();//przechowuje sugerowany kierunek ruchu wynikajacy z tabLBM
+            desiredAngle = rotation;//przechowuje sugerowany kierunek ruchu wynikajacy z tabLBM
 
             #region dazenie do celu - skret jak i gaz
             //czyli jechanie po wektorach z gazu do celu + uwazanie na miejsca w ktorych tych wskazowek niema
@@ -181,7 +179,7 @@ namespace TrafficSym2D
                 float vectorAngle = (float)Math.Atan2(vy, vx);
                 desiredAngle = vectorAngle;
                 //obliczenie roznicy kierunku jazdy oraz kata z gazu
-                float angleDiff = vectorAngle - getRotation();
+                float angleDiff = vectorAngle - rotation;
 
                 while (angleDiff > (float)(Math.PI))
                     angleDiff -= (float)(2.0 * Math.PI);
@@ -455,7 +453,7 @@ namespace TrafficSym2D
             #region skrecanie - ograniczenie kierunku ruchu jesli zbyt odstaje od pozadanego
             {
                 //obliczenie roznicy kierunku jazdy oraz kata z gazu
-                float angleDiff = desiredAngle - getRotation();
+                float angleDiff = desiredAngle - rotation;
 
                 while (angleDiff > (float)(Math.PI))
                     angleDiff -= (float)(2.0 * Math.PI);
@@ -650,10 +648,7 @@ namespace TrafficSym2D
                 velocity = 0f;
             // obrot
             rotation += steer * velocity * elapsedSeconds * some_steer_param;
-            while (rotation > (float)(2.0 * Math.PI))
-                rotation -= (float)(2.0 * Math.PI);
-            while (rotation < 0)
-                rotation += (float)(2.0 * Math.PI);
+            rotation = GeneralHelper.NormalizeAngle(rotation);
             //pozycja
             prevPosition = position;
             position.X += (float)(Math.Cos(rotation) * velocity * elapsedSeconds * pixelToMeterRatio);
