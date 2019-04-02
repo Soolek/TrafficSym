@@ -129,13 +129,13 @@ namespace TrafficSym2D
 
             mapTexture = LoadMap(Path.Combine("Configs", Config.ConfigDir, "map.tga"));
             SetVariablesBasedOnMap(mapTexture);
-            
+
             graphics.PreferredBackBufferWidth = resX;
             graphics.PreferredBackBufferHeight = resY;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
 
-            if(Config.RecordToCsv)
+            if (Config.RecordToCsv)
             {
                 var csvFileName = string.Format("record-{0}.csv", DateTime.Now.ToString("dd_MM_yy_HH_mm"));
                 _csvRecorder = new CsvRecorder(Path.Combine("Configs", Config.ConfigDir, csvFileName));
@@ -387,7 +387,7 @@ namespace TrafficSym2D
                             }
                     }
 
-                    //dodawanie nowych aut automatycznie
+                    //Automatic car adding
                     if (doAutomaticCars)
                         for (int i = 0; i < routeConfigList.Count; i++)
                         {
@@ -395,6 +395,19 @@ namespace TrafficSym2D
                             if (gameTime.TotalGameTime.TotalMilliseconds > (rc.lastCarOutTime.TotalMilliseconds + rc.timeBetweenCarsMs))
                             {
                                 rc.lastCarOutTime = gameTime.TotalGameTime;
+                                
+                                if (Config.EndAfterCarsSpawned > 0)
+                                {
+                                    if (_carIndex > Config.EndAfterCarsSpawned)
+                                    {
+                                        if(cars.Count==0)
+                                        {
+                                            this.Exit();
+                                        }
+                                        break;
+                                    }
+                                }
+
                                 AddNewCar(i, gameTime);
                             }
                         }
@@ -437,7 +450,7 @@ namespace TrafficSym2D
 
                         car.Update(gameTime);
 
-                        if(_csvRecorder!=null)
+                        if (_csvRecorder != null)
                         {
                             _csvRecorder.AddData(_frameCount, gameTime.TotalGameTime, lightConfigId, car);
                         }
