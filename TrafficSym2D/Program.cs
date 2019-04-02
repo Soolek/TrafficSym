@@ -16,7 +16,7 @@ namespace TrafficSym2D
         static void Main(string[] args)
         {
             var parsedArgs = args
-                .Select(s => s.Split(new[] { ':' }, 1))
+                .Select(s => s.Split(':'))
                 .ToDictionary(s => s[0].ToLower(), s => s[1].ToLower());
 
             using (var game = new TrafficSymGame(parsedArgs))
