@@ -47,6 +47,7 @@ namespace TrafficSym2D
     {
         public int timeBetweenCarsMs;
         public float initialSpeed;
+        public float maxSpeed;
         public TimeSpan lastCarOutTime;
         public List<RouteStart> routeStart = new List<RouteStart>();
         public List<RouteEnd> routeEnd = new List<RouteEnd>();

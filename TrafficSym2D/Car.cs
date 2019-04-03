@@ -74,6 +74,7 @@ namespace TrafficSym2D
         public float steer;
         public float velocity;
         public float acc;
+        public float maxSpeed;
 
         //sterowanie
         private float _userAcc;
@@ -202,8 +203,9 @@ namespace TrafficSym2D
                     else
                         userSteer = (float)(angleDiff * 4.0 / Math.PI);
                 }
-                userAcc = ((1f - Math.Abs(userSteer)) + 0.05f) * (8f + 4f * aggressiveness) - velocity;
-                userAcc = MathHelper.Clamp(userAcc, 0f, 0.3f + 0.7f * aggressiveness);
+                float desiredSpeed = 1 + (1f - Math.Abs(userSteer)) * maxSpeed;
+                userAcc = (desiredSpeed - velocity) / 2f;
+                userAcc = MathHelper.Clamp(userAcc, -(0.7f + 0.3f * aggressiveness), 0.3f + 0.7f * aggressiveness);
             }
             else //jak dane nie sa wystarczajace
             {

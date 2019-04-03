@@ -738,13 +738,14 @@ namespace TrafficSym2D
                 car = new Car(
                     this,
                     Content.Load<Texture2D>("cars\\car" + rand.Next(1, carSpritesCount + 1).ToString()),
-                    new Vector2((float)rand.Next(rs.x1, rs.x2), (float)rand.Next(rs.y1, rs.y2)),
+                    new Vector2((float)rand.Next(Math.Min(rs.x1, rs.x2),Math.Max(rs.x1, rs.x2)), (float)rand.Next(Math.Min(rs.y1, rs.y2),Math.Max(rs.y1, rs.y2))),
                     MathHelper.ToRadians(rs.directionDeg),
                     tabLBMIndex,
                     rand.Next(0, 101) / 100f
                 );
                 car.Update(gameTime);//po to by odswiezyl sobie punkty ramki
                 car.velocity = routeConfigList[tabLBMIndex].initialSpeed;
+                car.maxSpeed = routeConfigList[tabLBMIndex].maxSpeed;
 
                 //sprawdzenie czy nie nachodzi na inne auta
                 foreach (Car car2 in cars)

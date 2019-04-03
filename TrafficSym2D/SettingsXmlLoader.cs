@@ -52,6 +52,7 @@ namespace TrafficSym2D
                 RouteConfig routeConfig = new RouteConfig();
                 routeConfig.timeBetweenCarsMs = Convert.ToInt32(xmlNodeMain.Attributes["timeBetweenCarsMs"].Value);
                 routeConfig.initialSpeed = xmlNodeMain.Attributes["initialSpeed"] != null ? float.Parse(xmlNodeMain.Attributes["initialSpeed"].Value) : 0;
+                routeConfig.maxSpeed = xmlNodeMain.Attributes["maxSpeed"] != null ? float.Parse(xmlNodeMain.Attributes["maxSpeed"].Value) : 14;
 
                 for (int i2 = 0; i2 < xmlNodeMain.ChildNodes.Count; i2++)
                 {
