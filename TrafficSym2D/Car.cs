@@ -183,10 +183,7 @@ namespace TrafficSym2D
                 //obliczenie roznicy kierunku jazdy oraz kata z gazu
                 float angleDiff = vectorAngle - rotation;
 
-                while (angleDiff > (float)(Math.PI))
-                    angleDiff -= (float)(2.0 * Math.PI);
-                while (angleDiff < -(float)(Math.PI))
-                    angleDiff += (float)(2.0 * Math.PI);
+                angleDiff = GeneralHelper.NormalizeAngleSteering(angleDiff);
                 ////odpowiednie skrecenie kol w aucie
                 if (angleDiff < 0)
                 {
@@ -207,16 +204,21 @@ namespace TrafficSym2D
                 userAcc = (desiredSpeed - velocity) / 2f;
                 userAcc = MathHelper.Clamp(userAcc, -(0.7f + 0.3f * aggressiveness), 0.3f + 0.7f * aggressiveness);
             }
-            else //jak dane nie sa wystarczajace
+            else if (tabLBM[tx, ty].isSource)
             {
-                if (tabLBM[tx, ty].isSource) userAcc = 1;
+                userAcc = 1;
             }
-            //zabezpieczenie jak w sciane wjedzie
-            if (tabLBM[tx, ty].isWall)
+            //seek closest drivable cell
+            else if (tabLBM[tx, ty].isWall)
             {
                 intersectsSmth = true;
-                if (velocity > 0) userAcc = -1;
-                else userAcc = -0.5f;
+
+                var target = FindClosestNormalCell(tabLBM, position, parent.elementSize);
+                var angle = GeneralHelper.NormalizeAngleSteering((float)Math.Atan2(target.Y - position.Y, target.X - position.X)-rotation);
+
+                userSteer = MathHelper.Clamp(angle, -(float)(Math.PI / 4.0), (float)(Math.PI / 4.0));
+                userAcc = MathHelper.Clamp(1f - velocity, 0, 1);
+                return;
             }
             #endregion
 
@@ -280,11 +282,11 @@ namespace TrafficSym2D
                             || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointFR, otherCar.framePointRR))
                             || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointRR, otherCar.framePointRL))
                             || (OrientationHelper.Intersection(posBumperRightCar, position, otherCar.framePointRL, otherCar.framePointFL))
-                            || (OrientationHelper.Intersection(posBumperFront, position, otherCar.framePointRR, otherCar.framePointRL)) )
+                            || (OrientationHelper.Intersection(posBumperFront, position, otherCar.framePointRR, otherCar.framePointRL)))
                         {
                             intersectsSmth = true;
                             userAcc = (velocity == 0 ? -1 : -velocity);
-                            if(this.IntersectsOtherCar(otherCar))
+                            if (this.IntersectsOtherCar(otherCar))
                                 SeparateCars(this, otherCar);
                         }
 
@@ -399,7 +401,7 @@ namespace TrafficSym2D
                 Color c = parent.GetColorFromLogicMapAtPoint(framePointF + (leftSeeker * i));
                 if (c.A > 254 && c.B > 128)
                 {
-                    userSteer = 0.75f * (maxSeekWidth-i) / maxSeekWidth;
+                    userSteer = 0.75f * (maxSeekWidth - i) / maxSeekWidth;
                     break;
                 }
                 else
@@ -427,7 +429,7 @@ namespace TrafficSym2D
 
                 Parallel.ForEach(parent.cars, otherCar =>
                 {
-                    if (frontBumterLintersects && frontBumterRintersects) 
+                    if (frontBumterLintersects && frontBumterRintersects)
                         return;
 
                     if (!otherCar.Equals(this) && ((otherCar.position - this.position).Length() <= (2 * spriteHeight)))
@@ -575,6 +577,29 @@ namespace TrafficSym2D
             //jak jedzie do tylu to zeby skrecil na odwrot...
             if (velocity < 0)
                 userSteer *= -1f;
+        }
+
+        private Vector2 FindClosestNormalCell(LBMElement[,] tabLBM, Vector2 position, int elementSize)
+        {
+            var tx = (int)(position.X / elementSize);
+            var ty = (int)(position.Y / elementSize);
+
+            for (var distance = 1; distance < Math.Min(parent.countX, parent.countY); distance++)
+            {
+                for (int i = 0; i < distance * distance; i++)
+                {
+                    int dx = i % distance - distance / 2;
+                    int dy = i / distance - distance / 2;
+                    int x = MathHelper.Clamp(tx + dx, 0, parent.countX-1);
+                    int y = MathHelper.Clamp(ty + dy, 0, parent.countY-1);
+                    if (tabLBM[x, y].isNormal)
+                    {
+                        return new Vector2(x * elementSize, y * elementSize);
+                    }
+                }
+
+            }
+            return new Vector2(0, 0);
         }
 
         /// <summary>

@@ -29,6 +29,16 @@ namespace TrafficSym2D
             return angle;
         }
 
+        public static float NormalizeAngleSteering(float angle)
+        {
+            while (angle > (float)(Math.PI))
+                angle -= (float)(2.0 * Math.PI);
+            while (angle < -(float)(Math.PI))
+                angle += (float)(2.0 * Math.PI);
+
+            return angle;
+        }
+
         public static float Min(params float[] values)
         {
             return Enumerable.Min(values);
