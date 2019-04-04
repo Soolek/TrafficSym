@@ -467,7 +467,7 @@ namespace TrafficSym2D
                     }
                 }
 
-                if (tabLBM.Count() > 0) gameState = GameState.SimulateTraffic;
+                if (tabLBM.Count() > 0) gameState = GameState.SimulateLBM;
 
                 return;
             }
@@ -534,8 +534,9 @@ namespace TrafficSym2D
                                 }
 
                 //malowanie stanow symulacji gazu
-                spriteBatch.DrawString(defaultFont, "tabLBM index: " + currentTabLBMIndex.ToString(), new Vector2(1, 20), Color.White);
-                spriteBatch.DrawString(defaultFont, "doAutomaticLBM: " + doAutomaticLBM.ToString(), new Vector2(1, 40), Color.White);
+                int linePos = 0;
+                spriteBatch.DrawString(defaultFont, "tabLBM index: " + currentTabLBMIndex.ToString(), new Vector2(1, linePos+=20), Color.White);
+                spriteBatch.DrawString(defaultFont, "doAutomaticLBM: " + doAutomaticLBM.ToString(), new Vector2(1, linePos+=20), Color.White);
 
                 MouseState mousestate = Mouse.GetState();
                 if ((mousestate.X > 0) && (mousestate.X < resX) && (mousestate.Y > 0) && (mousestate.Y < resY))
@@ -545,6 +546,21 @@ namespace TrafficSym2D
                     spriteBatch.DrawString(defaultFont, "d: " + l.density.ToString(), new Vector2(mousestate.X, mousestate.Y + 30), Color.White);
                     spriteBatch.DrawString(defaultFont, "x: " + mousestate.X.ToString() + " y: " + mousestate.Y.ToString(), new Vector2(mousestate.X, mousestate.Y + 50), Color.White);
                     DrawLine(texWall, new Vector2(mousestate.X, mousestate.Y), new Vector2(mousestate.X + tabLBM[currentTabLBMIndex][mousestate.X / elementSize, mousestate.Y / elementSize].x * 30f, mousestate.Y + tabLBM[currentTabLBMIndex][mousestate.X / elementSize, mousestate.Y / elementSize].y * 30f), new Color(0, 255, 0));
+                }
+
+                //Check if all configs have generated
+                if (!doAutomaticLBM)
+                {
+                    bool allConfigsGenerated = true;
+                    for(int lbmIndex=0;lbmIndex<routeConfigList.Count;lbmIndex++)
+                    {
+                        allConfigsGenerated &= _lbmController.HasRouteVectorMapGenerated(tabLBM[lbmIndex], routeConfigList[lbmIndex]);
+                    }
+
+                    if(allConfigsGenerated)
+                    {
+                        spriteBatch.DrawString(defaultFont, "Ready to simulate traffic", new Vector2(1, linePos+=20), Color.HotPink);
+                    }
                 }
             }
 
