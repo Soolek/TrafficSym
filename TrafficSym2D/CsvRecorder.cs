@@ -17,6 +17,23 @@ namespace TrafficSym2D
         public CsvRecorder(string csvFilePath)
         {
             OpenFile(csvFilePath);
+            WriteHeader(_fileStream);
+        }
+
+        private void WriteHeader(StreamWriter _fileStream)
+        {
+            _fileStream.Write(string.Format(_format,"frame"));
+            _fileStream.Write(string.Format(_format,"timestamp"));
+            _fileStream.Write(string.Format(_format,"lightConfigId"));
+            _fileStream.Write(string.Format(_format,"car.Id"));
+            _fileStream.Write(string.Format(_format,"car.position.X"));
+            _fileStream.Write(string.Format(_format,"car.position.Y"));
+            _fileStream.Write(string.Format(_format,"car.steer"));
+            _fileStream.Write(string.Format(_format,"car.rotation"));
+            _fileStream.Write(string.Format(_format,"car.aggressiveness"));
+            _fileStream.Write(string.Format(_format,"car.velocity"));
+            _fileStream.Write(string.Format(_format,"car.acceleration"));
+            _fileStream.WriteLine(string.Format(_format, "car.brake"));
         }
 
         public void AddData(long frame, TimeSpan timestamp, int lightConfigId, Car car)

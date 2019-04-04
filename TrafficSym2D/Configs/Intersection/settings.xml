@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TrafficSym2D>
+  <routeConfigs>
+    <config id="0" timeBetweenCarsMs="14010" comment="right-up" initialSpeed="5" maxSpeed="10">
+      <start x1="1169" y1="55" x2="1169" y2="55" direction="150"/>
+      <end x1="1162" y1="101" x2="1164" y2="121"/>
+    </config>
+  </routeConfigs>
+</TrafficSym2D>

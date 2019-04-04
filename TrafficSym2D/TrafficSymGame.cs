@@ -467,7 +467,15 @@ namespace TrafficSym2D
                     }
                 }
 
-                if (tabLBM.Count() > 0) gameState = GameState.SimulateLBM;
+                if (tabLBM.Count() > 0)
+                {
+                    gameState = GameState.SimulateLBM;
+                }
+
+                if (AllConfigsGenerated())
+                {
+                    gameState = GameState.SimulateTraffic;
+                }
 
                 return;
             }
@@ -551,13 +559,7 @@ namespace TrafficSym2D
                 //Check if all configs have generated
                 if (!doAutomaticLBM)
                 {
-                    bool allConfigsGenerated = true;
-                    for(int lbmIndex=0;lbmIndex<routeConfigList.Count;lbmIndex++)
-                    {
-                        allConfigsGenerated &= _lbmController.HasRouteVectorMapGenerated(tabLBM[lbmIndex], routeConfigList[lbmIndex]);
-                    }
-
-                    if(allConfigsGenerated)
+                    if (AllConfigsGenerated())
                     {
                         spriteBatch.DrawString(defaultFont, "Ready to simulate traffic", new Vector2(1, linePos+=20), Color.HotPink);
                     }
@@ -663,6 +665,16 @@ namespace TrafficSym2D
 
             base.Draw(gameTime);
             spriteBatch.End();
+        }
+
+        private bool AllConfigsGenerated()
+        {
+            bool allConfigsGenerated = true;
+            for (int lbmIndex = 0; lbmIndex < routeConfigList.Count; lbmIndex++)
+            {
+                allConfigsGenerated &= _lbmController.HasRouteVectorMapGenerated(tabLBM[lbmIndex], routeConfigList[lbmIndex]);
+            }
+            return allConfigsGenerated;
         }
 
         public void DrawLine(Texture2D spr, Vector2 a, Vector2 b, Color col)
