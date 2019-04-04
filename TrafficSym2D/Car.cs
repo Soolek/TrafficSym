@@ -208,7 +208,7 @@ namespace TrafficSym2D
             {
                 userAcc = 1;
             }
-            //seek closest drivable cell
+            //drive to closest road
             else if (tabLBM[tx, ty].isWall)
             {
                 intersectsSmth = true;
@@ -298,7 +298,8 @@ namespace TrafficSym2D
                             float relativeAngleOtherCar = revGiveWay * ((float)Math.Atan2(otherCar.position.Y - posBumperFront.Y, otherCar.position.X - posBumperFront.X) - desiredAngle);
                             relativeAngleOtherCar = GeneralHelper.NormalizeAngle(relativeAngleOtherCar);
 
-                            if ((relativeAngleOtherCar > 0f) && (relativeAngleOtherCar < MathHelper.PiOver2)) //jak miedzy 0 a 90 stopni i wystarczajaco blisko
+                            //if it is on the right (left) side of car...
+                            if ((relativeAngleOtherCar > 0f) && (relativeAngleOtherCar < Math.PI))//MathHelper.PiOver2))
                             {
                                 float angleRelative = revGiveWay * (desiredAngle - otherCar.rotation);
                                 angleRelative = GeneralHelper.NormalizeAngle(angleRelative);
@@ -314,7 +315,7 @@ namespace TrafficSym2D
                                 if ((otherCarVel * velocity) < 1f) addParam *= (otherCarVel * velocity);
 
                                 //Calculating whether other car braking distance is bigger than perpendicular distance to current car
-                                if (((otherCarVel * velocity * pixelToMeterRatio / otherCar.force_braking + addParam) * perpendicularity) > minLengthDiff)
+                                if (((otherCarVel * velocity * pixelToMeterRatio / (otherCar.force_braking * 0.7f) + addParam) * perpendicularity) > minLengthDiff)
                                 {
                                     intersectsSmth = true;
                                     var newAcc = (velocity <= 0 ? 0 : -velocity);

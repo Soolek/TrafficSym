@@ -138,7 +138,7 @@ namespace TrafficSym2D
 
             if (Config.RecordToCsv)
             {
-                var csvFileName = string.Format("record-{0}.csv", DateTime.Now.ToString("dd_MM_yy_HH_mm"));
+                var csvFileName = string.Format("TrafficSym_{0}-{1}.csv", Config.ConfigDir, DateTime.Now.ToString("dd_MM_yy_HH_mm"));
                 _csvRecorder = new CsvRecorder(Path.Combine("Configs", Config.ConfigDir, csvFileName));
             }
 

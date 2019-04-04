@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <TrafficSym2D>
   <routeConfigs>
-    <config id="0" timeBetweenCarsMs="2000" comment="downIn" initialSpeed="16" maxSpeed="36">
+    <config id="0" timeBetweenCarsMs="1000" comment="downIn" initialSpeed="16" maxSpeed="36">
       <start x1="1599" y1="1049" x2="1599" y2="1049" direction="225"/>
       <start x1="1619" y1="1044" x2="1619" y2="1044" direction="225"/>
       <start x1="1634" y1="1030" x2="1634" y2="1030" direction="225"/>
       <end  x1="383" y1="7" x2="343" y2="50"/>
       <end  x1="1505" y1="1009" x2="1463" y2="1050"/>
     </config>
-    <config id="1" timeBetweenCarsMs="2000" comment="upIn" initialSpeed="16" maxSpeed="36">
-      <start x1="215" y1="10" x2="215" y2="10" direction="45"/>
-      <start x1="200" y1="25" x2="200" y2="25" direction="45"/>
-      <start x1="185" y1="39" x2="185" y2="39" direction="45"/>
+    <config id="1" timeBetweenCarsMs="1000" comment="upIn" initialSpeed="16" maxSpeed="36">
+      <start x1="215" y1="10" x2="215" y2="10" direction="30"/>
+      <start x1="200" y1="25" x2="200" y2="25" direction="30"/>
+      <start x1="185" y1="39" x2="185" y2="39" direction="30"/>
       <end  x1="383" y1="7" x2="343" y2="50"/>
       <end  x1="1505" y1="1009" x2="1463" y2="1050"/>
     </config>
