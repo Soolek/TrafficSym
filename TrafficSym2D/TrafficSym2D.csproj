@@ -50,7 +50,7 @@
     <Compile Include="TrafficSymGame.cs" />
     <Compile Include="GeneralHelper.cs" />
     <Compile Include="LBM\LBMElement.cs" />
-    <Compile Include="LBM\LBMHelper.cs" />
+    <Compile Include="LBM\LBMController.cs" />
     <Compile Include="LightConfig.cs" />
     <Compile Include="OrientationHelper.cs" />
     <Compile Include="Program.cs" />

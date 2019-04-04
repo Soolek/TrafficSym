@@ -13,7 +13,7 @@ Each tab has its purpouse:
 ## 0: Route configuration helper
 To Be Explained...
 ## 1: LBM simulation for route configs
-- A turns on/off the LBM simulation ("doLBM")
+- A turns on/off automatic LBM saving and changing index
 - S saves current LBM vectors to a file
 - Arrow Up/Down changes current route confid ("tabLBM index")
 Before running traffic simulation, each route has to have vector maps generated from start to end so that traffic knows how to drive.

@@ -5,14 +5,138 @@ using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using TrafficSym2D.Enums;
+using System.Threading.Tasks;
 
 namespace TrafficSym2D.LBM
 {
-    public static class LBMHelper
+    public class LBMController
     {
-        public static Random r = new Random();
-        public static TrafficSymGame parent;
+        private readonly float FLOW_MAX = 0.05f;
+        private readonly float COEF = 0.24f;
+
+        private static Random random = new Random();
         public static int maxParticleDensity = 1;
+
+        private int countX;
+        private int countY;
+        private int elementSize;
+
+        private float[,] fx;
+        private float[,] fy;
+
+        public LBMController(int countX, int countY, int elementSize)
+        {
+            this.countX = countX;
+            this.countY = countY;
+            this.elementSize = elementSize;
+
+            fx = new float[countX, countY];
+            fy = new float[countX, countY];
+        }
+
+        public void Update(LBMElement[,] tabLBM)
+        {
+            Array.Clear(fx, 0, fx.Length);
+            Array.Clear(fy, 0, fy.Length);
+
+            //LBM flow
+            Parallel.For(0, (countY - 1) * (countX - 1), i =>
+            {
+                int y = i / (countX - 1);
+                int x = i % (countX - 1);
+
+                if (!tabLBM[x, y].isWall)
+                {
+                    if (!tabLBM[x + 1, y].isWall)
+                        fx[x, y] = MathHelper.Clamp(COEF * (tabLBM[x, y].density - tabLBM[x + 1, y].density), -FLOW_MAX, FLOW_MAX);
+                    else
+                        fx[x, y] = 0f;
+
+                    if (!tabLBM[x, y + 1].isWall)
+                        fy[x, y] = MathHelper.Clamp(COEF * (tabLBM[x, y].density - tabLBM[x, y + 1].density), -FLOW_MAX, FLOW_MAX);
+                    else
+                        fy[x, y] = 0f;
+                }
+                else
+                {
+                    fx[x, y] = 0f;
+                    fy[x, y] = 0f;
+                }
+            });
+
+            //LBM density
+            Parallel.For(0, (countY) * (countX), i =>
+            {
+                int y = i / (countX);
+                int x = i % (countX);
+
+                if (!tabLBM[x, y].isWall)
+                {
+                    float dens = tabLBM[x, y].density;
+
+                    if (x > 0) dens += fx[x - 1, y];
+                    if (y > 0) dens += fy[x, y - 1];
+
+                    dens -= fx[x, y];
+                    dens -= fy[x, y];
+
+                    tabLBM[x, y].density = MathHelper.Clamp(dens, -10f, 10f);
+                }
+            });
+
+            //Graphical LBM flow
+            Parallel.For(0, (countY - 1) * (countX - 1), i =>
+            {
+                int y = i / (countX - 1);
+                int x = i % (countX - 1);
+
+                if (!tabLBM[x, y].isWall)
+                {
+                    float vx = 0f;
+                    float vy = 0f;
+                    if (!tabLBM[x - 1, y].isWall) vx += (tabLBM[x - 1, y].density - tabLBM[x, y].density);
+                    if (!tabLBM[x + 1, y].isWall) vx += (tabLBM[x, y].density - tabLBM[x + 1, y].density);
+                    tabLBM[x, y].x = MathHelper.Clamp(vx * 100f, ((float)-elementSize), ((float)elementSize));
+                    if (!tabLBM[x, y - 1].isWall) vy += (tabLBM[x, y - 1].density - tabLBM[x, y].density);
+                    if (!tabLBM[x, y + 1].isWall) vy += (tabLBM[x, y].density - tabLBM[x, y + 1].density);
+                    tabLBM[x, y].y = MathHelper.Clamp(vy * 100f, ((float)-elementSize), ((float)elementSize));
+                }
+            });
+        }
+
+        /// <summary>
+        /// Returns true if all starting points from routeConfig have a road cell with big enough vector in direct neighbourhood
+        /// </summary>
+        public bool HasRouteVectorMapGenerated(LBMElement[,] tabLBM, RouteConfig routeConfig)
+        {
+            foreach(var rs in routeConfig.routeStart)
+            {
+                if (
+                    !HasFullyPropagatedLBMCellNear(tabLBM, rs.x1 / elementSize, rs.y1 / elementSize) ||
+                    !HasFullyPropagatedLBMCellNear(tabLBM, rs.x2 / elementSize, rs.y2 / elementSize)
+                    )
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool HasFullyPropagatedLBMCellNear(LBMElement[,] tabLBM, int checkX, int checkY)
+        {
+            bool normalCellEncountered = false;
+            for(int x = Math.Max(0,checkX-1); x<=Math.Min(countX-1,checkX+1); x++)
+                for(int y = Math.Max(0,checkY-1); y<=Math.Min(countY-1,checkY+1); y++)
+                {
+                    normalCellEncountered |= tabLBM[x, y].isNormal;
+                    if(
+                        tabLBM[x,y].isNormal &&
+                        Math.Sqrt((tabLBM[x,y].x * tabLBM[x,y].x) + (tabLBM[x,y].y * tabLBM[x,y].y))>0.5
+                        )
+                    return true;
+                }
+            return !normalCellEncountered;
+        }
+
 
         public static bool isWall(byte b)
         {
@@ -37,7 +161,7 @@ namespace TrafficSym2D.LBM
 
         public static byte RandomDirection()
         {
-            return DirectionPower((byte)r.Next(1, 7));
+            return DirectionPower((byte)random.Next(1, 7));
         }
 
         public static byte GetByteFromDir(byte[,] tab, int x, int y, byte dir)

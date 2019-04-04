@@ -45,18 +45,15 @@ namespace TrafficSym2D
         public int countX = 0;
         public int countY = 0;
 
-        public static float FLOW_MAX = 0.05f;
-        public static float COEF = 0.24f;
-        public static float SQRT2 = (float)Math.Sqrt(2.0);
-
         public Random rand = new Random();
         public GameState gameState = 0;
 
         public bool doAi = true;
-        public bool doLBM = false;
+        public bool doAutomaticLBM = true;
         public bool doAutomaticCars = true;
 
         private TabLBMSerializer _tabLBMSerializer;
+        private LBMController _lbmController;
 
         //XNA graphics
         GraphicsDeviceManager graphics;
@@ -84,8 +81,6 @@ namespace TrafficSym2D
         private long finishedCarCount = 0;
 
         //LBM implementation
-        float[,] fx;
-        float[,] fy;
         public LBMElement[,] lightTabLBM; //dodatkowe sciany do swiatel
         LBMElement[][,] tabLBM;
         private int _currentTabLBMIndex = 0;
@@ -124,12 +119,12 @@ namespace TrafficSym2D
 
         protected override void Initialize()
         {
-            _tabLBMSerializer = new TabLBMSerializer(Path.Combine("Configs", Config.ConfigDir));
-            LBMHelper.parent = this;
-            GeneralHelper.parent = this;
-
             mapTexture = LoadMap(Path.Combine("Configs", Config.ConfigDir, "map.tga"));
             SetVariablesBasedOnMap(mapTexture);
+
+            _tabLBMSerializer = new TabLBMSerializer(Path.Combine("Configs", Config.ConfigDir));
+            _lbmController = new LBMController(countX, countY, elementSize);
+            GeneralHelper.parent = this;
 
             graphics.PreferredBackBufferWidth = resX;
             graphics.PreferredBackBufferHeight = resY;
@@ -151,8 +146,6 @@ namespace TrafficSym2D
             resY = mapTexture.Height;
             countX = (resX / elementSize) + 1;
             countY = (resY / elementSize) + 1;
-            fx = new float[countX, countY];
-            fy = new float[countX, countY];
         }
 
         private Texture2D LoadMap(string mapPath)
@@ -245,11 +238,11 @@ namespace TrafficSym2D
             {
                 RouteConfig rc = routeConfigList[i];
                 foreach (RouteStart rs in rc.routeStart)
-                    LBMHelper.DrawLineLBM(tabLBM[i], elementSize, rs.x1, rs.y1, rs.x2, rs.y2, LBMNodeType.Source);
+                    LBMController.DrawLineLBM(tabLBM[i], elementSize, rs.x1, rs.y1, rs.x2, rs.y2, LBMNodeType.Source);
                 foreach (RouteEnd re in rc.routeEnd)
-                    LBMHelper.DrawLineLBM(tabLBM[i], elementSize, re.x1, re.y1, re.x2, re.y2, LBMNodeType.Sink);
+                    LBMController.DrawLineLBM(tabLBM[i], elementSize, re.x1, re.y1, re.x2, re.y2, LBMNodeType.Sink);
                 foreach (RouteWall rw in rc.routeWall)
-                    LBMHelper.DrawLineLBM(tabLBM[i], elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
+                    LBMController.DrawLineLBM(tabLBM[i], elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
             }
 
             base.LoadContent();
@@ -311,74 +304,23 @@ namespace TrafficSym2D
             }
 
             //LBM
-            if ((gameState == GameState.SimulateLBM) && doLBM)
+            if ((gameState == GameState.SimulateLBM))
             {
-                Array.Clear(fx, 0, fx.Length);
-                Array.Clear(fy, 0, fy.Length);
+                _lbmController.Update(tabLBM[currentTabLBMIndex]);
 
-                //LBM flow
-                Parallel.For(0, (countY - 1) * (countX - 1), i =>
+                //Automatic LBM maps generation - stops when all vector maps have valid routes
+                if (doAutomaticLBM && _lbmController.HasRouteVectorMapGenerated(tabLBM[currentTabLBMIndex], routeConfigList[currentTabLBMIndex]))
                 {
-                    int y = i / (countX - 1);
-                    int x = i % (countX - 1);
-
-                    if (!tabLBM[currentTabLBMIndex][x, y].isWall)
+                    _tabLBMSerializer.SaveTabLBM(tabLBM[currentTabLBMIndex], currentTabLBMIndex);
+                    if (currentTabLBMIndex == routeConfigList.Count - 1)
                     {
-                        if (!tabLBM[currentTabLBMIndex][x + 1, y].isWall)
-                            fx[x, y] = MathHelper.Clamp(COEF * (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x + 1, y].density), -FLOW_MAX, FLOW_MAX);
-                        else
-                            fx[x, y] = 0f;
-
-                        if (!tabLBM[currentTabLBMIndex][x, y + 1].isWall)
-                            fy[x, y] = MathHelper.Clamp(COEF * (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x, y + 1].density), -FLOW_MAX, FLOW_MAX);
-                        else
-                            fy[x, y] = 0f;
+                        doAutomaticLBM = false;
                     }
                     else
                     {
-                        fx[x, y] = 0f;
-                        fy[x, y] = 0f;
+                        currentTabLBMIndex++;
                     }
-                });
-
-                //LBM density
-                Parallel.For(0, (countY) * (countX), i =>
-                {
-                    int y = i / (countX);
-                    int x = i % (countX);
-
-                    if (!tabLBM[currentTabLBMIndex][x, y].isWall)
-                    {
-                        float dens = tabLBM[currentTabLBMIndex][x, y].density;
-
-                        if (x > 0) dens += fx[x - 1, y];
-                        if (y > 0) dens += fy[x, y - 1];
-
-                        dens -= fx[x, y];
-                        dens -= fy[x, y];
-
-                        tabLBM[currentTabLBMIndex][x, y].density = MathHelper.Clamp(dens, -10f, 10f);
-                    }
-                });
-
-                //Graphical LBM flow
-                Parallel.For(0, (countY - 1) * (countX - 1), i =>
-                {
-                    int y = i / (countX - 1);
-                    int x = i % (countX - 1);
-
-                    if (!tabLBM[currentTabLBMIndex][x, y].isWall)
-                    {
-                        float vx = 0f;
-                        float vy = 0f;
-                        if (!tabLBM[currentTabLBMIndex][x - 1, y].isWall) vx += (tabLBM[currentTabLBMIndex][x - 1, y].density - tabLBM[currentTabLBMIndex][x, y].density);
-                        if (!tabLBM[currentTabLBMIndex][x + 1, y].isWall) vx += (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x + 1, y].density);
-                        tabLBM[currentTabLBMIndex][x, y].x = MathHelper.Clamp(vx * 100f, ((float)-elementSize), ((float)elementSize));
-                        if (!tabLBM[currentTabLBMIndex][x, y - 1].isWall) vy += (tabLBM[currentTabLBMIndex][x, y - 1].density - tabLBM[currentTabLBMIndex][x, y].density);
-                        if (!tabLBM[currentTabLBMIndex][x, y + 1].isWall) vy += (tabLBM[currentTabLBMIndex][x, y].density - tabLBM[currentTabLBMIndex][x, y + 1].density);
-                        tabLBM[currentTabLBMIndex][x, y].y = MathHelper.Clamp(vy * 100f, ((float)-elementSize), ((float)elementSize));
-                    }
-                });
+                }
             }
 
             if (gameState == GameState.SimulateTraffic)
@@ -421,7 +363,7 @@ namespace TrafficSym2D
                             if (!lightConfigList[lightConfigId].lightId.Contains(x)) //jak zawiera oznacza ze ma byc to swiatlo zielone i nie malowac...
                             {
                                 RouteWall rw = lightList[x];
-                                LBMHelper.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
+                                LBMController.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
                             }
                     }
 
@@ -432,7 +374,7 @@ namespace TrafficSym2D
                         for (int x = 0; x < lightList.Count; x++)
                         {
                             RouteWall rw = lightList[x];
-                            LBMHelper.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, 0);
+                            LBMController.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, 0);
                         }
                         //malowanie nowych scian
                         lightConfigId++;
@@ -442,7 +384,7 @@ namespace TrafficSym2D
                             if (!lightConfigList[lightConfigId].lightId.Contains(x)) //jak zawiera oznacza ze ma byc to swiatlo zielone i nie malowac...
                             {
                                 RouteWall rw = lightList[x];
-                                LBMHelper.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
+                                LBMController.DrawLineLBM(lightTabLBM, elementSize, rw.x1, rw.y1, rw.x2, rw.y2, LBMNodeType.Wall);
                             }
                     }
                 }
@@ -542,7 +484,7 @@ namespace TrafficSym2D
                     currentTabLBMIndex--;
 
                 if (keybstate.IsKeyDown(Keys.A))
-                    doLBM = !doLBM;
+                    doAutomaticLBM = !doAutomaticLBM;
 
                 //zapis / odczyt
                 if (keybstate.IsKeyDown(Keys.S))
@@ -593,7 +535,7 @@ namespace TrafficSym2D
 
                 //malowanie stanow symulacji gazu
                 spriteBatch.DrawString(defaultFont, "tabLBM index: " + currentTabLBMIndex.ToString(), new Vector2(1, 20), Color.White);
-                spriteBatch.DrawString(defaultFont, "doLBM: " + doLBM.ToString(), new Vector2(1, 40), Color.White);
+                spriteBatch.DrawString(defaultFont, "doAutomaticLBM: " + doAutomaticLBM.ToString(), new Vector2(1, 40), Color.White);
 
                 MouseState mousestate = Mouse.GetState();
                 if ((mousestate.X > 0) && (mousestate.X < resX) && (mousestate.Y > 0) && (mousestate.Y < resY))
