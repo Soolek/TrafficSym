@@ -1,9 +1,126 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <TrafficSym2D>
   <routeConfigs>
-    <config id="0" timeBetweenCarsMs="14010" comment="right-up" initialSpeed="5" maxSpeed="10">
-      <start x1="1169" y1="55" x2="1169" y2="55" direction="150"/>
-      <end x1="1162" y1="101" x2="1164" y2="121"/>
+    <config id="0" timeBetweenCarsMs="8000" comment="right-up" initialSpeed="5" maxSpeed="10">
+      <start x1="699" y1="4" x2="699" y2="4" comment="start right straight/turn right" direction="135"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="782" y1="2" x2="549" y2="158"/>
+      <wall x1="549" y1="160" x2="451" y2="158"/>
+      <wall x1="451" y1="158" x2="319" y2="3"/>
     </config>
+    <config id="1" timeBetweenCarsMs="8000" comment="right-left" initialSpeed="5" maxSpeed="10">
+      <start x1="699" y1="4" x2="699" y2="4" comment="start right straight/turn right" direction="135"/>
+      <start x1="729" y1="4" x2="729" y2="4" comment="start right straight" direction="135"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="554" y1="118" x2="451" y2="220"/>
+      <wall x1="444" y1="229" x2="361" y2="303"/>
+      <wall x1="534" y1="239" x2="431" y2="316"/>
+    </config>
+    <config id="2" timeBetweenCarsMs="8000" comment="right-down" initialSpeed="5" maxSpeed="10">
+      <start x1="771" y1="4" x2="771" y2="4" comment="start right turn left" direction="135"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="687" y1="0" x2="558" y2="173"/>
+      <wall x1="558" y1="173" x2="463" y2="257"/>
+      <wall x1="463" y1="257" x2="450" y2="350"/>
+      <wall x1="525" y1="251" x2="494" y2="357"/>
+      <wall x1="494" y1="357" x2="529" y2="437"/>
+      <wall x1="475" y1="404" x2="510" y2="515"/>
+    </config>
+
+    <config id="3" timeBetweenCarsMs="8000" comment="up-left" initialSpeed="5" maxSpeed="10">
+      <start x1="241" y1="3" x2="241" y2="3" comment="start up turn right" direction="60"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="302" y1="2" x2="408" y2="262"/>
+      <wall x1="408" y1="262" x2="407" y2="344"/>
+    </config>
+    <config id="4" timeBetweenCarsMs="8000" comment="up-down" initialSpeed="5" maxSpeed="10">
+      <start x1="272" y1="3" x2="272" y2="3" comment="start up straight" direction="60"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="303" y1="2" x2="431" y2="243"/>
+      <wall x1="431" y1="243" x2="531" y2="436"/>
+      <wall x1="230" y1="4" x2="402" y2="265"/>
+      <wall x1="402" y1="265" x2="432" y2="316"/>
+      <wall x1="475" y1="404" x2="587" y2="610"/>
+    </config>
+    <config id="5" timeBetweenCarsMs="8000" comment="up-right" initialSpeed="5" maxSpeed="10">
+      <start x1="295" y1="3" x2="295" y2="3" comment="start up turn left" direction="60"/>      
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="445" y1="227" x2="504" y2="346"/>
+      <wall x1="504" y1="346" x2="567" y2="323"/>
+      <wall x1="229" y1="3" x2="419" y2="251"/>
+      <wall x1="419" y1="251" x2="529" y2="437"/>
+      <wall x1="543" y1="426" x2="609" y2="383"/>
+    </config>
+
+    <config id="6" timeBetweenCarsMs="8000" comment="left-down" initialSpeed="5" maxSpeed="10">
+      <start x1="193" y1="644" x2="193" y2="644" comment="start left straight/turn right" direction="325"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="155" y1="619" x2="332" y2="566"/>
+      <wall x1="332" y1="566" x2="529" y2="437"/>
+    </config>
+    <config id="7" timeBetweenCarsMs="8000" comment="left-right" initialSpeed="5" maxSpeed="10">
+      <start x1="193" y1="644" x2="193" y2="644" comment="start left straight/turn right" direction="325"/>
+      <start x1="146" y1="645" x2="146" y2="645" comment="start left straight" direction="325"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="265" y1="623" x2="529" y2="436"/>
+      <wall x1="543" y1="425" x2="609" y2="381"/>
+      <wall x1="474" y1="404" x2="568" y2="325"/>
+    </config>
+
+    <config id="8" timeBetweenCarsMs="8000" comment="down-right" initialSpeed="5" maxSpeed="10">
+      <start x1="710" y1="645" x2="710" y2="645" comment="start down straight/turn right" direction="240"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="665" y1="648" x2="563" y2="414"/>
+      <wall x1="563" y1="414" x2="581" y2="311"/>
+    </config>
+    <config id="9" timeBetweenCarsMs="8000" comment="down-up" initialSpeed="5" maxSpeed="10">
+      <start x1="710" y1="645" x2="710" y2="645" comment="start down straight/turn right" direction="240"/>
+      <start x1="677" y1="645" x2="677" y2="645" comment="start down straight" direction="240"/>
+      <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
+      <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
+      <end x1="50" y1="647" x2="2" y2="648" comment="exit left1"/>
+      <end x1="2" y1="648" x2="1" y2="634" comment="exit left2"/>
+      <end x1="623" y1="647" x2="646" y2="647" comment="exit down"/>
+      <wall x1="592" y1="417" x2="554" y2="321"/>
+      <wall x1="526" y1="250" x2="471" y2="115"/>
+      <wall x1="542" y1="426" x2="449" y2="220"/>
+    </config>
+
   </routeConfigs>
 </TrafficSym2D>
