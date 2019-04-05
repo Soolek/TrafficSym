@@ -344,7 +344,7 @@ namespace TrafficSym2D
                 posBumperRight = GeneralHelper.NormalizeVector(posBumperRight);
 
                 #region braking for walkway
-                if (velocity > 10f)
+                if (velocity > 5f)
                 {
                     Color retrievedColor = parent.GetColorFromLogicMapAtPoint((int)posBumperLeft.X, (int)posBumperLeft.Y);
 
