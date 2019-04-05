@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System.Threading.Tasks;
 using TrafficSym2D.LBM;
+using TrafficSym2D.Enums;
 //using Microsoft.Xna.Framework.Net;
 //using Microsoft.Xna.Framework.Storage;
 
@@ -142,27 +143,20 @@ namespace TrafficSym2D
 
             desiredAngle = rotation;//przechowuje sugerowany kierunek ruchu wynikajacy z tabLBM
 
-            #region dazenie do celu - skret jak i gaz
-            //czyli jechanie po wektorach z gazu do celu + uwazanie na miejsca w ktorych tych wskazowek niema
-
-            //wyciaganie kierunku jazdy z gazu
-            int tx = (int)(position.X / (float)parent.elementSize);
-            int ty = (int)(position.Y / (float)parent.elementSize);
-            //Vector2 posBumperFrontTemp = new Vector2();
-            //float disttemp = velocity * velocity / force_braking;
-            //if (velocity < 0)
-            //    if (disttemp > 1f) disttemp = 1f;
-            //disttemp /= (1f + aggressiveness / 2f);
-            //float dist2temp = (disttemp * pixelToMeterRatio) + parent.elementSize;
-            //posBumperFrontTemp.X = framePointF.X + ((float)Math.Cos(rotation) * dist2temp);
-            //posBumperFrontTemp.Y = framePointF.Y + ((float)Math.Sin(rotation) * dist2temp);
-
-            //int tx = (int)(posBumperFrontTemp.X / (float)parent.elementSize);
-            //int ty = (int)(posBumperFrontTemp.Y / (float)parent.elementSize);
+            #region following LBM vector map
+            int tx = (int)(framePointF.X / (float)parent.elementSize);
+            int ty = (int)(framePointF.Y / (float)parent.elementSize);
+            //on the border use center car position
+            if (!(tx < (parent.countX - 2) && ty < (parent.countY - 2) && tx>1 && ty>1))
+            {
+                tx = (int)(position.X / (float)parent.elementSize);
+                ty = (int)(position.Y / (float)parent.elementSize);
+            }
+            
             float vx, vy;//przechowuja kierunek
 
             //jako sugestie kierunku bierzemy pole na ktorym auto jest z waga *4 + cztery okoliczne pola
-            if ((tx < (parent.countX - 1)) && (ty < (parent.countY - 1)))
+            if (tx < (parent.countX - 1) && ty < (parent.countY - 1) && tx>0 && ty>0)
             {
                 vx = tabLBM[tx, ty].x * 4f; vy = tabLBM[tx, ty].y * 4f;
                 vx += tabLBM[tx + 1, ty].x; vy += tabLBM[tx + 1, ty].y;
@@ -349,8 +343,8 @@ namespace TrafficSym2D
                 posBumperLeft = GeneralHelper.NormalizeVector(posBumperLeft);
                 posBumperRight = GeneralHelper.NormalizeVector(posBumperRight);
 
-                #region chodnik olewamy jak jedziemy powoli
-                if (velocity > 0.5f)
+                #region braking for walkway
+                if (velocity > 10f)
                 {
                     Color retrievedColor = parent.GetColorFromLogicMapAtPoint((int)posBumperLeft.X, (int)posBumperLeft.Y);
 
@@ -376,7 +370,7 @@ namespace TrafficSym2D
                 #endregion
 
                 #region sciany ze swiatlami
-                if ((aggressiveness < 0.9) && (velocity >= -0.1f))
+                if (velocity >= -0.1f)
                 {
                     if (parent.lightTabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
                         userAcc = -1;
@@ -514,70 +508,97 @@ namespace TrafficSym2D
             });
             #endregion
 
-            #region skrecanie - nie wjezdzanie na chodnik
+            #region turning to avoid walkways and LBM walls
             {
-                Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
-                posBumperLeft.X = position.X + ((float)Math.Cos(rotation) * scale * spriteHeight) + ((float)Math.Cos(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
-                posBumperLeft.Y = position.Y + ((float)Math.Sin(rotation) * scale * spriteHeight) + ((float)Math.Sin(rotation - MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
-                posBumperRight.X = position.X + ((float)Math.Cos(rotation) * scale * spriteHeight) + ((float)Math.Cos(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
-                posBumperRight.Y = position.Y + ((float)Math.Sin(rotation) * scale * spriteHeight) + ((float)Math.Sin(rotation + MathHelper.PiOver2) * scale * spriteWidth * 0.75f);
+                var startSeekWidth = (scale * spriteWidth * 0.25f);
+                maxSeekWidth = (scale * spriteWidth * 0.75f);
+                var steerToAvoid = 0f;
 
-                if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(posBumperRight)))
-                    userSteer = -1;
-                else if (parent.IsWalkway(parent.GetColorFromLogicMapAtPoint(posBumperLeft)))
-                    userSteer = 1;
+                for (float i = startSeekWidth; i <= maxSeekWidth; i += 0.5f)
+                {
+                    var frontLeft = framePointF + (leftSeeker * i);
+                    var c = parent.GetColorFromLogicMapAtPoint(frontLeft);
+                    if (parent.IsWalkway(c) || LBMTypeAtPosition(tabLBM, frontLeft) == LBMNodeType.Wall)
+                    {
+                        steerToAvoid += 0.75f * (maxSeekWidth - i) / (maxSeekWidth - startSeekWidth);
+                        break;
+                    }
+                }
+
+                for (float i = startSeekWidth; i <= maxSeekWidth; i += 0.5f)
+                {
+                    var frontRight = framePointF - (leftSeeker * i);
+                    var c = parent.GetColorFromLogicMapAtPoint(frontRight);
+                    if (parent.IsWalkway(c) || LBMTypeAtPosition(tabLBM, frontRight) == LBMNodeType.Wall)
+                    {
+                        steerToAvoid -= 0.75f * (maxSeekWidth - i) / (maxSeekWidth - startSeekWidth);
+                        break;
+                    }
+                }
+
+                if(steerToAvoid!=0)
+                {
+                    userSteer = steerToAvoid;
+                }
             }
             #endregion
 
             #region skrecanie - nie wyjezdzanie z toru jazdy (poza nim brak danych gdzie jechac
-            {
-                Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
-                //jak najezdza przednim zderzakiem na sciane to zeby odpowiednio skrecil by dalej nie najezdzac
-                posBumperLeft = framePointFL + (leftSeeker * scale * spriteWidth * 0.25f);
-                posBumperRight = framePointFR - (leftSeeker * scale * spriteWidth * 0.25f);
-                Vector2 posBumperLeft2 = posBumperLeft - frontSeeker * scale * spriteWidth * 0.50f;
-                Vector2 posBumperRight2 = posBumperRight - frontSeeker * scale * spriteWidth * 0.50f;
+            //{
+            //    Vector2 posBumperLeft = new Vector2(), posBumperRight = new Vector2();
+            //    //jak najezdza przednim zderzakiem na sciane to zeby odpowiednio skrecil by dalej nie najezdzac
+            //    posBumperLeft = framePointFL + (leftSeeker * scale * spriteWidth * 0.25f);
+            //    posBumperRight = framePointFR - (leftSeeker * scale * spriteWidth * 0.25f);
+            //    Vector2 posBumperLeft2 = posBumperLeft - frontSeeker * scale * spriteWidth * 0.50f;
+            //    Vector2 posBumperRight2 = posBumperRight - frontSeeker * scale * spriteWidth * 0.50f;
 
-                if (
-                    ((posBumperLeft.X / parent.elementSize) < parent.countX - 1) &&
-                    (posBumperLeft.X > parent.elementSize) &&
-                    ((posBumperRight.X / parent.elementSize) < parent.countX - 1) &&
-                    (posBumperRight.X > parent.elementSize) &&
-                    ((posBumperLeft.Y / parent.elementSize) < parent.countY - 1) &&
-                    (posBumperLeft.Y > parent.elementSize) &&
-                    ((posBumperRight.Y / parent.elementSize) < parent.countY - 1) &&
-                    (posBumperRight.Y > parent.elementSize)
-                )
-                {
-                    if (tabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
-                        userSteer = 1;//by odbil w prawo
-                    else if (tabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
-                        userSteer = -1;//by odbil w lewo
-                }
+            //    if (
+            //        ((posBumperLeft.X / parent.elementSize) < parent.countX - 1) &&
+            //        (posBumperLeft.X > parent.elementSize) &&
+            //        ((posBumperRight.X / parent.elementSize) < parent.countX - 1) &&
+            //        (posBumperRight.X > parent.elementSize) &&
+            //        ((posBumperLeft.Y / parent.elementSize) < parent.countY - 1) &&
+            //        (posBumperLeft.Y > parent.elementSize) &&
+            //        ((posBumperRight.Y / parent.elementSize) < parent.countY - 1) &&
+            //        (posBumperRight.Y > parent.elementSize)
+            //    )
+            //    {
+            //        if (tabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
+            //            userSteer = 1;//by odbil w prawo
+            //        else if (tabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
+            //            userSteer = -1;//by odbil w lewo
+            //    }
 
-                posBumperLeft = posBumperLeft2; posBumperRight = posBumperRight2;
-                if (
-                   ((posBumperLeft.X / parent.elementSize) < parent.countX - 1) &&
-                   (posBumperLeft.X > parent.elementSize) &&
-                   ((posBumperRight.X / parent.elementSize) < parent.countX - 1) &&
-                   (posBumperRight.X > parent.elementSize) &&
-                   ((posBumperLeft.Y / parent.elementSize) < parent.countY - 1) &&
-                   (posBumperLeft.Y > parent.elementSize) &&
-                   ((posBumperRight.Y / parent.elementSize) < parent.countY - 1) &&
-                   (posBumperRight.Y > parent.elementSize)
-               )
-                    if (tabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
-                        userSteer = 1;//by odbil w prawo
-                    else if (tabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
-                        userSteer = -1;//by odbil w lewo
+            //    posBumperLeft = posBumperLeft2; posBumperRight = posBumperRight2;
+            //    if (
+            //       ((posBumperLeft.X / parent.elementSize) < parent.countX - 1) &&
+            //       (posBumperLeft.X > parent.elementSize) &&
+            //       ((posBumperRight.X / parent.elementSize) < parent.countX - 1) &&
+            //       (posBumperRight.X > parent.elementSize) &&
+            //       ((posBumperLeft.Y / parent.elementSize) < parent.countY - 1) &&
+            //       (posBumperLeft.Y > parent.elementSize) &&
+            //       ((posBumperRight.Y / parent.elementSize) < parent.countY - 1) &&
+            //       (posBumperRight.Y > parent.elementSize)
+            //   )
+            //        if (tabLBM[(int)posBumperLeft.X / parent.elementSize, (int)posBumperLeft.Y / parent.elementSize].isWall)
+            //            userSteer = 1;//by odbil w prawo
+            //        else if (tabLBM[(int)posBumperRight.X / parent.elementSize, (int)posBumperRight.Y / parent.elementSize].isWall)
+            //            userSteer = -1;//by odbil w lewo
 
-            }
+            //}
             #endregion
 
 
             //jak jedzie do tylu to zeby skrecil na odwrot...
             if (velocity < 0)
                 userSteer *= -1f;
+        }
+
+        private LBMNodeType LBMTypeAtPosition(LBMElement[,] tabLBM, Vector2 vec)
+        {
+            var x = MathHelper.Clamp((int)(vec.X / parent.elementSize), 1, parent.countX - 2);
+            var y = MathHelper.Clamp((int)(vec.Y / parent.elementSize), 1, parent.countY - 2);
+            return tabLBM[x,y].nodeType;
         }
 
         private Vector2 FindClosestNormalCell(LBMElement[,] tabLBM, Vector2 position, int elementSize)
