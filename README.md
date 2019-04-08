@@ -26,6 +26,5 @@ Let the LBM simulation run, and once a stabilised vector stream reaches start po
 
 
 # TODO
-- Add CSV export support
 - Visualize and extend route config editor on "0" tab
 - Write documentation about creating maps and settings
