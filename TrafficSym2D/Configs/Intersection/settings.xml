@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <TrafficSym2D>
   <routeConfigs>
-    <config id="0" timeBetweenCarsMs="8000" comment="right-up" initialSpeed="5" maxSpeed="10">
+    <config id="0" timeBetweenCarsMs="3000" comment="right-up" initialSpeed="5" maxSpeed="10">
       <start x1="699" y1="4" x2="699" y2="4" comment="start right straight/turn right" direction="135"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -12,7 +12,7 @@
       <wall x1="549" y1="160" x2="451" y2="158"/>
       <wall x1="451" y1="158" x2="319" y2="3"/>
     </config>
-    <config id="1" timeBetweenCarsMs="8000" comment="right-left" initialSpeed="5" maxSpeed="10">
+    <config id="1" timeBetweenCarsMs="3100" comment="right-left" initialSpeed="5" maxSpeed="10">
       <start x1="699" y1="4" x2="699" y2="4" comment="start right straight/turn right" direction="135"/>
       <start x1="729" y1="4" x2="729" y2="4" comment="start right straight" direction="135"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
@@ -24,7 +24,7 @@
       <wall x1="444" y1="229" x2="361" y2="303"/>
       <wall x1="534" y1="239" x2="431" y2="316"/>
     </config>
-    <config id="2" timeBetweenCarsMs="8000" comment="right-down" initialSpeed="5" maxSpeed="10">
+    <config id="2" timeBetweenCarsMs="4200" comment="right-down" initialSpeed="5" maxSpeed="10">
       <start x1="771" y1="4" x2="771" y2="4" comment="start right turn left" direction="135"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -39,7 +39,7 @@
       <wall x1="475" y1="404" x2="510" y2="515"/>
     </config>
 
-    <config id="3" timeBetweenCarsMs="8000" comment="up-left" initialSpeed="5" maxSpeed="10">
+    <config id="3" timeBetweenCarsMs="3300" comment="up-left" initialSpeed="5" maxSpeed="10">
       <start x1="241" y1="3" x2="241" y2="3" comment="start up turn right" direction="60"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -49,7 +49,7 @@
       <wall x1="302" y1="2" x2="408" y2="262"/>
       <wall x1="408" y1="262" x2="407" y2="344"/>
     </config>
-    <config id="4" timeBetweenCarsMs="8000" comment="up-down" initialSpeed="5" maxSpeed="10">
+    <config id="4" timeBetweenCarsMs="3400" comment="up-down" initialSpeed="5" maxSpeed="10">
       <start x1="272" y1="3" x2="272" y2="3" comment="start up straight" direction="60"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -62,7 +62,7 @@
       <wall x1="402" y1="265" x2="432" y2="316"/>
       <wall x1="475" y1="404" x2="587" y2="610"/>
     </config>
-    <config id="5" timeBetweenCarsMs="8000" comment="up-right" initialSpeed="5" maxSpeed="10">
+    <config id="5" timeBetweenCarsMs="4500" comment="up-right" initialSpeed="5" maxSpeed="10">
       <start x1="295" y1="3" x2="295" y2="3" comment="start up turn left" direction="60"/>      
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -76,7 +76,7 @@
       <wall x1="543" y1="426" x2="609" y2="383"/>
     </config>
 
-    <config id="6" timeBetweenCarsMs="8000" comment="left-down" initialSpeed="5" maxSpeed="10">
+    <config id="6" timeBetweenCarsMs="3600" comment="left-down" initialSpeed="5" maxSpeed="10">
       <start x1="193" y1="644" x2="193" y2="644" comment="start left straight/turn right" direction="325"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -86,7 +86,7 @@
       <wall x1="155" y1="619" x2="332" y2="566"/>
       <wall x1="332" y1="566" x2="529" y2="437"/>
     </config>
-    <config id="7" timeBetweenCarsMs="8000" comment="left-right" initialSpeed="5" maxSpeed="10">
+    <config id="7" timeBetweenCarsMs="3700" comment="left-right" initialSpeed="5" maxSpeed="10">
       <start x1="193" y1="644" x2="193" y2="644" comment="start left straight/turn right" direction="325"/>
       <start x1="146" y1="645" x2="146" y2="645" comment="start left straight" direction="325"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
@@ -99,7 +99,7 @@
       <wall x1="474" y1="404" x2="568" y2="325"/>
     </config>
 
-    <config id="8" timeBetweenCarsMs="8000" comment="down-right" initialSpeed="5" maxSpeed="10">
+    <config id="8" timeBetweenCarsMs="3800" comment="down-right" initialSpeed="5" maxSpeed="10">
       <start x1="710" y1="645" x2="710" y2="645" comment="start down straight/turn right" direction="240"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
       <end x1="323" y1="1" x2="375" y2="2" comment="exit up"/>
@@ -109,7 +109,7 @@
       <wall x1="665" y1="648" x2="563" y2="414"/>
       <wall x1="563" y1="414" x2="581" y2="311"/>
     </config>
-    <config id="9" timeBetweenCarsMs="8000" comment="down-up" initialSpeed="5" maxSpeed="10">
+    <config id="9" timeBetweenCarsMs="3900" comment="down-up" initialSpeed="5" maxSpeed="10">
       <start x1="710" y1="645" x2="710" y2="645" comment="start down straight/turn right" direction="240"/>
       <start x1="677" y1="645" x2="677" y2="645" comment="start down straight" direction="240"/>
       <end x1="925" y1="1" x2="1009" y2="2" comment="exit right"/>
@@ -123,4 +123,48 @@
     </config>
 
   </routeConfigs>
+
+  <lightConfig>
+    <lights>
+      <light x1="572" y1="205" x2="554" y2="186" comment="0: right turn left"/>
+      <light x1="563" y1="179" x2="547" y2="161" comment="1: right straight"/>
+      <light x1="556" y1="152" x2="535" y2="128" comment="2: right turn right"/>
+
+      <light x1="420" y1="190" x2="402" y2="202" comment="3: up turn left"/>
+      <light x1="393" y1="196" x2="377" y2="207" comment="4: up straight"/>
+      <light x1="370" y1="198" x2="348" y2="210" comment="5: up turn right"/>
+
+      <light x1="429" y1="501" x2="399" y2="462" comment="6: left straight"/>
+      <light x1="440" y1="493" x2="458" y2="518" comment="7: left turn right"/>
+
+      <light x1="565" y1="463" x2="607" y2="442" comment="8: down straight"/>
+    </lights>
+    <configs>
+      <config timeToWaitMs="15000" comment="Vertical">
+        <light id="4"/>
+        <light id="5"/>
+        <light id="8"/>
+      </config>
+      <config timeToWaitMs="15000" comment="Vertical+turn left">
+        <light id="4"/>
+        <light id="5"/>
+        <light id="3"/>
+      </config>
+      <config timeToWaitMs="3000" comment="Vertical cooldown">
+      </config>
+      <config timeToWaitMs="15000" comment="Horizontal">
+        <light id="1"/>
+        <light id="2"/>
+        <light id="6"/>
+        <light id="7"/>
+      </config>
+      <config timeToWaitMs="15000" comment="Horizontal+turn left">
+        <light id="1"/>
+        <light id="2"/>
+        <light id="0"/>
+      </config>
+      <config timeToWaitMs="4000" comment="Horizontal cooldown">
+      </config>
+    </configs>
+  </lightConfig>
 </TrafficSym2D>
