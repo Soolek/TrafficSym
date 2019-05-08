@@ -725,13 +725,15 @@ namespace TrafficSym2D
             {
                 ok = true;
 
+                var aggressiveness = (float)rand.NextDoubleNormalDist();
+
                 car = new Car(
                     this,
                     Content.Load<Texture2D>("cars\\car" + rand.Next(1, carSpritesCount + 1).ToString()),
                     new Vector2((float)rand.Next(Math.Min(rs.x1, rs.x2),Math.Max(rs.x1, rs.x2)), (float)rand.Next(Math.Min(rs.y1, rs.y2),Math.Max(rs.y1, rs.y2))),
                     MathHelper.ToRadians(rs.directionDeg),
                     tabLBMIndex,
-                    rand.Next(0, 101) / 100f
+                    aggressiveness
                 );
                 car.Update(gameTime);//po to by odswiezyl sobie punkty ramki
                 car.velocity = routeConfigList[tabLBMIndex].initialSpeed;

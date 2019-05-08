@@ -43,5 +43,20 @@ namespace TrafficSym2D
         {
             return Enumerable.Min(values);
         }
+
+        /// <summary>
+        /// Random with normal distribution
+        /// https://stackoverflow.com/questions/18807812/adding-an-average-parameter-to-nets-random-next-to-curve-results
+        /// </summary>
+        public static double NextDoubleNormalDist(this Random rand, double min=0.0, double max=1.0, int tightness=10)
+        {
+            double total = 0.0;
+            for (int i = 1; i <= tightness; i++)
+            {
+                total += rand.NextDouble();
+            }
+
+            return ((total / tightness) * (max - min)) + min;
+        }
     }
 }
