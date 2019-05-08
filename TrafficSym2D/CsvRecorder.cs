@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace TrafficSym2D
 
         private StreamWriter _fileStream;
         private Dictionary<int, string> _data = new Dictionary<int, string>();
+        private CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
 
         public CsvRecorder(string csvFilePath)
         {
@@ -24,33 +26,33 @@ namespace TrafficSym2D
         {
             _fileStream.Write(string.Format(_format,"frame"));
             _fileStream.Write(string.Format(_format,"timestamp"));
-            _fileStream.Write(string.Format(_format,"lightConfigId"));
-            _fileStream.Write(string.Format(_format,"car.Id"));
-            _fileStream.Write(string.Format(_format,"car.position.X"));
-            _fileStream.Write(string.Format(_format,"car.position.Y"));
-            _fileStream.Write(string.Format(_format,"car.steer"));
-            _fileStream.Write(string.Format(_format,"car.rotation"));
-            _fileStream.Write(string.Format(_format,"car.aggressiveness"));
-            _fileStream.Write(string.Format(_format,"car.velocity"));
-            _fileStream.Write(string.Format(_format,"car.acceleration"));
-            _fileStream.WriteLine(string.Format(_format, "car.brake"));
+            _fileStream.Write(string.Format(_format,"light_config_id"));
+            _fileStream.Write(string.Format(_format,"car_Id"));
+            _fileStream.Write(string.Format(_format,"car_position_X"));
+            _fileStream.Write(string.Format(_format,"car_position_Y"));
+            _fileStream.Write(string.Format(_format,"car_steer"));
+            _fileStream.Write(string.Format(_format,"car_rotation"));
+            _fileStream.Write(string.Format(_format,"car_aggressiveness"));
+            _fileStream.Write(string.Format(_format,"car_velocity"));
+            _fileStream.Write(string.Format(_format,"car_acceleration"));
+            _fileStream.WriteLine(string.Format(_format, "car_brake"));
         }
 
         public void AddData(long frame, TimeSpan timestamp, int lightConfigId, Car car)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat(_format, frame);
-            sb.AppendFormat(_format, timestamp);
-            sb.AppendFormat(_format, lightConfigId);
-            sb.AppendFormat(_format, car.Id);
-            sb.AppendFormat(_format, car.position.X);
-            sb.AppendFormat(_format, car.position.Y);
-            sb.AppendFormat(_format, car.steer * 180f / Math.PI); //steer in deg
-            sb.AppendFormat(_format, car.rotation * 180f / Math.PI); //rotation in deg
-            sb.AppendFormat(_format, car.aggressiveness);
-            sb.AppendFormat(_format, car.velocity);
-            sb.AppendFormat(_format, car.userAcc > 0 ? car.userAcc : 0);
-            sb.AppendFormat(_format, car.userAcc < 0 ? -car.userAcc : 0); //brake
+            sb.AppendFormat(culture, _format, frame);
+            sb.AppendFormat(culture, _format, timestamp);
+            sb.AppendFormat(culture, _format, lightConfigId);
+            sb.AppendFormat(culture, _format, car.Id);
+            sb.AppendFormat(culture, _format, car.position.X);
+            sb.AppendFormat(culture, _format, car.position.Y);
+            sb.AppendFormat(culture, _format, car.steer * 180f / Math.PI); //steer in deg
+            sb.AppendFormat(culture, _format, car.rotation * 180f / Math.PI); //rotation in deg
+            sb.AppendFormat(culture, _format, car.aggressiveness);
+            sb.AppendFormat(culture, _format, car.velocity);
+            sb.AppendFormat(culture, _format, car.userAcc > 0 ? car.userAcc : 0);
+            sb.AppendFormat(culture, _format, car.userAcc < 0 ? -car.userAcc : 0); //brake
 
             _data[car.Id] = sb.ToString();
         }

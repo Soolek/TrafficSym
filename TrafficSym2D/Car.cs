@@ -194,7 +194,7 @@ namespace TrafficSym2D
                     else
                         userSteer = (float)(angleDiff * 4.0 / Math.PI);
                 }
-                float desiredSpeed = 1 + (1f - Math.Abs(userSteer)) * maxSpeed;
+                float desiredSpeed = 1 + (1f - Math.Abs(userSteer)) * (float)(maxSpeed * (aggressiveness/2.0+0.6));
                 userAcc = (desiredSpeed - velocity) / 2f;
                 userAcc = MathHelper.Clamp(userAcc, -(0.7f + 0.3f * aggressiveness), 0.3f + 0.7f * aggressiveness);
             }

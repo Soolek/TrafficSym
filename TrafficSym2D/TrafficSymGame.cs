@@ -411,9 +411,12 @@ namespace TrafficSym2D
                         }
 
                         //wywalanie z listy jak dojechal do konca
-                        if (((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1))
-                            carsToRemove.Add(car);
-                        else if (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isSink)
+                        if (
+                            ((car.position.X / elementSize) >= countX - 1) || ((car.position.Y / elementSize) >= countY - 1) 
+                            || ((car.position.X / elementSize) <= 1) || ((car.position.Y / elementSize) <= 1)
+                            || (tabLBM[car.tabLBMIndex][(int)car.position.X / elementSize, (int)car.position.Y / elementSize].isSink)
+                            || (tabLBM[car.tabLBMIndex][(int)car.framePointF.X / elementSize, (int)car.framePointF.Y / elementSize].isSink)
+                            )
                             carsToRemove.Add(car);
                     }
                     catch (Exception e)
