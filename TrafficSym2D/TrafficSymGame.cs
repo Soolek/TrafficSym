@@ -407,7 +407,8 @@ namespace TrafficSym2D
 
                         if (_csvRecorder != null)
                         {
-                            _csvRecorder.AddData(_frameCount, gameTime.TotalGameTime, lightConfigId, car);
+                            int currentlyCrossedLightId = GetCarInterectingLightId(car);
+                            _csvRecorder.AddData(_frameCount, gameTime.TotalGameTime, lightConfigId, car, currentlyCrossedLightId);
                         }
 
                         //wywalanie z listy jak dojechal do konca
@@ -441,6 +442,22 @@ namespace TrafficSym2D
             }
 
             base.Update(gameTime);
+        }
+
+        private int GetCarInterectingLightId(Car car)
+        {
+            //iterate over lights, intersection with: car.framePointF - car.framePointR
+            for (int lightId = 0; lightId < lightList.Count; lightId++)
+            {
+                var light = lightList[lightId];
+                var lightVector1 = new Vector2(light.x1, light.y1);
+                var lightVector2 = new Vector2(light.x2, light.y2);
+                if (OrientationHelper.Intersection(car.framePointF, car.framePointR, lightVector1, lightVector2))
+                {
+                    return lightId;
+                }
+            }
+            return -1;
         }
 
         protected override void Draw(GameTime gameTime)

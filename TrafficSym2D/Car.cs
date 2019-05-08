@@ -48,6 +48,7 @@ namespace TrafficSym2D
         public Vector2 framePointRR = new Vector2();
         public Vector2 framePointF = new Vector2();
         public Vector2 framePointFF = new Vector2();
+        public Vector2 framePointR = new Vector2();
 
         public float desiredAngle;//przechowuje kat wynikajacy z tabLBM pod autem
 
@@ -194,7 +195,7 @@ namespace TrafficSym2D
                     else
                         userSteer = (float)(angleDiff * 4.0 / Math.PI);
                 }
-                float desiredSpeed = 1 + (1f - Math.Abs(userSteer)) * (float)(maxSpeed * (aggressiveness/2.0+0.6));
+                float desiredSpeed = 1 + (1f - Math.Abs(userSteer)) * (float)(maxSpeed * (aggressiveness*0.8+0.6));
                 userAcc = (desiredSpeed - velocity) / 2f;
                 userAcc = MathHelper.Clamp(userAcc, -(0.7f + 0.3f * aggressiveness), 0.3f + 0.7f * aggressiveness);
             }
@@ -722,6 +723,8 @@ namespace TrafficSym2D
 
             framePointF = GeneralHelper.NormalizeVector(position + front);
             framePointFF = GeneralHelper.NormalizeVector(position + front + front);//specialnie by 2 auta nie mogly sie w sobie pojawic
+
+            framePointR = GeneralHelper.NormalizeVector(position - rear);
         }
 
         public void Draw(SpriteBatch spritebatch)

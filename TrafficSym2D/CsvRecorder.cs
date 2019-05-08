@@ -27,7 +27,9 @@ namespace TrafficSym2D
             _fileStream.Write(string.Format(_format,"frame"));
             _fileStream.Write(string.Format(_format,"timestamp"));
             _fileStream.Write(string.Format(_format,"light_config_id"));
-            _fileStream.Write(string.Format(_format,"car_Id"));
+            _fileStream.Write(string.Format(_format,"car_id"));
+            _fileStream.Write(string.Format(_format, "car_route_id"));
+            _fileStream.Write(string.Format(_format, "car_intersecting_light_id"));
             _fileStream.Write(string.Format(_format,"car_position_X"));
             _fileStream.Write(string.Format(_format,"car_position_Y"));
             _fileStream.Write(string.Format(_format,"car_steer"));
@@ -38,13 +40,15 @@ namespace TrafficSym2D
             _fileStream.WriteLine(string.Format(_format, "car_brake"));
         }
 
-        public void AddData(long frame, TimeSpan timestamp, int lightConfigId, Car car)
+        public void AddData(long frame, TimeSpan timestamp, int lightConfigId, Car car, int currentlyCrossedLightId)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat(culture, _format, frame);
             sb.AppendFormat(culture, _format, timestamp);
             sb.AppendFormat(culture, _format, lightConfigId);
             sb.AppendFormat(culture, _format, car.Id);
+            sb.AppendFormat(culture, _format, car.tabLBMIndex);
+            sb.AppendFormat(culture, _format, currentlyCrossedLightId);
             sb.AppendFormat(culture, _format, car.position.X);
             sb.AppendFormat(culture, _format, car.position.Y);
             sb.AppendFormat(culture, _format, car.steer * 180f / Math.PI); //steer in deg
